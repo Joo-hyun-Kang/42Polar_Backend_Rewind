@@ -9,9 +9,9 @@ export class KeywordCategories {
 
   //TypeORM の create メソッドでは、リレーションのプロパティに Promise を渡すと正しく動作しない場合がある
   //そのため、Keywordsを追加する
-  @ManyToOne(() => Keywords, keywords => keywords.keywordCategories)
+  @ManyToOne(() => Keywords, (keywords) => keywords.keywordCategories)
   keywords: Keywords | Promise<Keywords>;
 
-  @ManyToOne(() => Categories, categoires => categoires.keywordCategories)
+  @ManyToOne(() => Categories, (categoires) => categoires.keywordCategories)
   categories: Categories | Promise<Categories>;
 }

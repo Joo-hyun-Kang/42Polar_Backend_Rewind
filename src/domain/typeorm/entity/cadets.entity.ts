@@ -39,12 +39,12 @@ export class Cadets {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @OneToMany(() => Comments, Comments => Comments.cadets)
+  @OneToMany(() => Comments, (Comments) => Comments.cadets)
   comments: Promise<Comments[]>;
 
-  @OneToMany(() => MentoringLogs, MentoringLogs => MentoringLogs.cadets)
+  @OneToMany(() => MentoringLogs, (MentoringLogs) => MentoringLogs.cadets)
   mentoringLogs: Promise<MentoringLogs[]>;
 
-  @OneToMany(() => Reports, Reports => Reports.cadets)
+  @OneToMany(() => Reports, (Reports) => Reports.cadets)
   reports: Promise<Reports[]>;
 }

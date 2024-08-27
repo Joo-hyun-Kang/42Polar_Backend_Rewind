@@ -56,12 +56,12 @@ export class MentoringLogs {
   @UpdateDateColumn({ type: 'timestamptz' })
   updateAt: Date;
 
-  @ManyToOne(() => Mentors, Mentors => Mentors.mentoringLogs)
+  @ManyToOne(() => Mentors, (Mentors) => Mentors.mentoringLogs)
   mentors: Mentors | Promise<Mentors>;
 
-  @ManyToOne(() => Cadets, Cadets => Cadets.mentoringLogs)
+  @ManyToOne(() => Cadets, (Cadets) => Cadets.mentoringLogs)
   cadets: Cadets | Promise<Cadets>;
 
-  @OneToOne(() => Reports, Reports => Reports.mentoringLogs)
+  @OneToOne(() => Reports, (Reports) => Reports.mentoringLogs)
   reports: Reports | Promise<Reports>;
 }

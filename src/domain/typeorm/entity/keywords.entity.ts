@@ -12,10 +12,10 @@ export class Keywords {
 
   @OneToMany(
     () => KeywordCategories,
-    KeywordCategories => KeywordCategories.keywords,
+    (KeywordCategories) => KeywordCategories.keywords,
   )
   keywordCategories: Promise<KeywordCategories[]>;
 
-  @OneToMany(() => MentorKeywords, mentorKeywords => mentorKeywords.keywords)
+  @OneToMany(() => MentorKeywords, (mentorKeywords) => mentorKeywords.keywords)
   mentorKeywords: Promise<MentorKeywords[]>;
 }

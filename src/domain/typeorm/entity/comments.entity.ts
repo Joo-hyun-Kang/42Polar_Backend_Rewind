@@ -29,9 +29,9 @@ export class Comments {
   @UpdateDateColumn({ type: 'timestamptz' })
   updateAt: Date;
 
-  @ManyToOne(() => Mentors, Mentors => Mentors.comments)
+  @ManyToOne(() => Mentors, (Mentors) => Mentors.comments)
   mentors: Mentors | Promise<Mentors>;
 
-  @ManyToOne(() => Cadets, Cadets => Cadets.comments)
+  @ManyToOne(() => Cadets, (Cadets) => Cadets.comments)
   cadets: Cadets | Promise<Cadets>;
 }

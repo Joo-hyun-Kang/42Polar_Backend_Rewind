@@ -9,6 +9,6 @@ export class Team {
   @Column()
   name: string;
 
-  @OneToMany(() => Member, member => member.team)
+  @OneToMany(() => Member, (member) => member.team)
   members: Promise<Member[]>;
 }

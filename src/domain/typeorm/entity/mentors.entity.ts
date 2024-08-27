@@ -58,15 +58,15 @@ export class Mentors {
   @UpdateDateColumn({ type: 'timestamptz' })
   updateAt: Date;
 
-  @OneToMany(() => MentorKeywords, mentorKeywords => mentorKeywords.mentors)
+  @OneToMany(() => MentorKeywords, (mentorKeywords) => mentorKeywords.mentors)
   mentorKeywords: Promise<MentorKeywords[]>;
 
-  @OneToMany(() => Comments, Comments => Comments.mentors)
+  @OneToMany(() => Comments, (Comments) => Comments.mentors)
   comments: Promise<Comments[]>;
 
-  @OneToMany(() => MentoringLogs, MentoringLogs => MentoringLogs.mentors)
+  @OneToMany(() => MentoringLogs, (MentoringLogs) => MentoringLogs.mentors)
   mentoringLogs: Promise<MentoringLogs[]>;
 
-  @OneToMany(() => Reports, Reports => Reports.mentors)
+  @OneToMany(() => Reports, (Reports) => Reports.mentors)
   reports: Promise<Reports>;
 }

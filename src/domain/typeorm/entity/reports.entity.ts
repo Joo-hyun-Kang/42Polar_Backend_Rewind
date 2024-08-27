@@ -68,7 +68,7 @@ export class Reports {
   @Column({ type: 'enum', enum: REPORT_STATUS, default: REPORT_STATUS.UNABLE })
   status: string;
 
-  @OneToOne(() => MentoringLogs, MentoringLogs => MentoringLogs.id)
+  @OneToOne(() => MentoringLogs, (MentoringLogs) => MentoringLogs.id)
   @JoinColumn()
   mentoringLogs: MentoringLogs;
 
@@ -78,9 +78,9 @@ export class Reports {
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @ManyToOne(() => Mentors, Mentors => Mentors.reports)
+  @ManyToOne(() => Mentors, (Mentors) => Mentors.reports)
   mentors: Mentors | Promise<Mentors>;
 
-  @ManyToOne(() => Cadets, Cadets => Cadets.reports)
+  @ManyToOne(() => Cadets, (Cadets) => Cadets.reports)
   cadets: Cadets | Promise<Cadets>;
 }

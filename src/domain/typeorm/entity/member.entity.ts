@@ -26,7 +26,7 @@ export class Member {
   @Column({ nullable: true }) // 新しいフィールド
   email: string;
 
-  @ManyToOne(() => Team, team => team.members)
+  @ManyToOne(() => Team, (team) => team.members)
   @JoinColumn()
   team: Promise<Team>;
 

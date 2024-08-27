@@ -7,9 +7,9 @@ export class MentorKeywords {
   @PrimaryGeneratedColumn('uuid')
   Id: string;
 
-  @ManyToOne(() => Keywords, Keywords => Keywords.id)
+  @ManyToOne(() => Keywords, (Keywords) => Keywords.id)
   keywords: Keywords | Promise<Keywords>;
 
-  @ManyToOne(() => Mentors, Mentors => Mentors.id)
+  @ManyToOne(() => Mentors, (Mentors) => Mentors.id)
   mentors: Mentors | Promise<Mentors>;
 }

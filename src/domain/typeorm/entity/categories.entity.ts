@@ -11,7 +11,7 @@ export class Categories {
 
   @OneToMany(
     () => KeywordCategories,
-    KeywordCategories => KeywordCategories.categories,
+    (KeywordCategories) => KeywordCategories.categories,
   )
   keywordCategories: Promise<KeywordCategories[]>;
 }
