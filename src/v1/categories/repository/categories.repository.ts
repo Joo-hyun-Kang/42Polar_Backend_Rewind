@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Categories } from 'src/domain/typeorm/entity/categories.entity';
 import { Repository } from 'typeorm';
-import { CategoriesDto } from '../dto/categories.dto';
 
 @Injectable()
 export class CategoriesRepository {
@@ -12,6 +15,35 @@ export class CategoriesRepository {
   ) {}
 
   async getCategories(): Promise<Categories[]> {
-    return await this.categoriesRepository.find();
+    const takeCount = 8;
+
+    return await this.categoriesRepository.find({
+      select: {
+        name: true,
+      },
+      take: takeCount,
+    });
+  }
+
+  //Categories->KeywordCategories->Keywordのデータを持っているオブジェクトを返す
+  async getRelatedCategoryKeyword(name: string): Promise<Categories> {
+    let category: Categories;
+
+    try {
+      category = await this.categoriesRepository
+        .createQueryBuilder('category')
+        .leftJoinAndSelect('category.keywordCategories', 'keywordCategories')
+        .leftJoinAndSelect('keywordCategories.keywords', 'keywords')
+        .where('category.name = :name', { name })
+        .getOne();
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+    }
+
+    if (!category) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return category;
   }
 }
