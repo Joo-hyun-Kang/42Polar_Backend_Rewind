@@ -29,11 +29,11 @@ interface MigrationOption {
 // 例えば、TypeOrmModule.forRoot({ ...basicOption, ...entityDynamicOption }),
 export const basicOption: DataSourceOptions = {
   type: 'postgres',
-  host: 'localhost',
-  port: 55000,
-  username: 'postgres',
-  password: 'postgrespw',
-  database: 'postgres',
+  host: process.env.DATABASE_HOST,
+  port: parseInt(process.env.DATABASE_PORT, 10),
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
   synchronize: false,
   logging: true,
 };
