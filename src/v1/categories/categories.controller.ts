@@ -11,7 +11,7 @@ import { CategoryKeywordsDto } from './dto/category-keyword.dto';
 import { MentorKeywordsDto } from './dto/mentor-keywords.dto';
 import { MentorsListByCategory } from './dto/mentors-list.interface';
 
-@Controller('/api/v1/categories/')
+@Controller()
 export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
 
