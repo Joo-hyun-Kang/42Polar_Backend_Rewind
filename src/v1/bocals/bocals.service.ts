@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BocalsRepository } from './bocals.repository';
 import { Bocals } from 'src/domain/typeorm/entity/bocal.entity';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
@@ -33,5 +33,23 @@ export class BocalsService {
       intraId: updatedbocal.intraId,
       role: ROLES.BOCAL,
     };
+  }
+
+  async isBocal(intraId: string): Promise<boolean> {
+    try {
+      const bocal = await this.findByIntra(intraId);
+      if (bocal) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      // NotFoundException の場合だけ例外をキャッチ
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+
+      // 他の例外はそのまま投げる
+      throw error;
+    }
   }
 }

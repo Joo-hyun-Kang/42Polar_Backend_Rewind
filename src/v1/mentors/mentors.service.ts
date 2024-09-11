@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { MentorsRepository } from './mentors.repository';
 import { AvailableTimeDto } from './dto/available-time.dto';
@@ -51,5 +51,23 @@ export class MentorsService {
     }
 
     return true;
+  }
+
+  async isMentor(intraId: string): Promise<boolean> {
+    try {
+      const mentor = await this.findByIntra(intraId);
+      if (mentor) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      // NotFoundException の場合だけ例外をキャッチ
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+
+      // 他の例外はそのまま投げる
+      throw error;
+    }
   }
 }

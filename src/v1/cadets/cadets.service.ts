@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CadetsRepository } from './cadets.repository';
 import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
 import { CreateCadetDto } from './dto/create-cadet.dto';
@@ -42,5 +42,24 @@ export class CadetsService {
       return false;
     }
     return true;
+  }
+
+  async isCadet(intraId: string): Promise<boolean> {
+    try {
+      console.log(`231231321`);
+      const cadet = await this.findCadetByIntraId(intraId);
+      if (cadet) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      // NotFoundException の場合だけ例外をキャッチ
+      if (error instanceof NotFoundException) {
+        return false;
+      }
+
+      // 他の例外はそのまま投げる
+      throw error;
+    }
   }
 }

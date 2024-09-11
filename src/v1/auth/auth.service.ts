@@ -1,10 +1,29 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { ROLES } from './enum/roles.enum';
 import { TokenResponse42Dto } from './dto/token-response42.dto';
 import { UserInfo42OriginDto } from './dto/oauth-42user-info-orgin.dto';
 
+import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
+import { Bocals } from 'src/domain/typeorm/entity/bocal.entity';
+import { JwtInfo, JwtInfoAndJoin } from './interface/jwt-user.interface';
+import { CadetsService } from '../cadets/cadets.service';
+import { BocalsService } from '../bocals/bocals.service';
+import { MentorsService } from '../mentors/mentors.service';
+import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
+import { CreateCadetDto } from '../cadets/dto/create-cadet.dto';
+
 @Injectable()
 export class AuthService {
+  constructor(
+    private cadetsService: CadetsService,
+    private bocalsService: BocalsService,
+    private mentorsService: MentorsService,
+  ) {}
+
   async getProfileBy42Intra(authCode: string): Promise<UserInfo42OriginDto> {
     const providerUrl = `https://api.intra.42.fr/oauth/token?grant_type=authorization_code&client_id=${process.env.UID_42}&client_secret=${process.env.SECRET_42}&code=${authCode}&redirect_uri=${process.env.REDIRECT_42}`;
     const response: TokenResponse42Dto =
@@ -74,64 +93,118 @@ export class AuthService {
     }
   }
 
-  // async validateProfile(userInfo: any) {
-  //   let result: JwtUser;
-  //   let join: boolean;
-  //   if (profile.campus[0].name !== 'Seoul') {
-  //     throw new ForbiddenException('서울 캠퍼스만 가입이 가능합니다.');
-  //   }
-  //   if (intraId.startsWith('m-')) {
-  //     const mentor: Mentors = await this.mentorsService.findByIntra(intraId);
-  //     if (!mentor) {
-  //       result = await this.mentorsService.createUser(intraId);
-  //       join = false;
-  //     } else {
-  //       result = { id: mentor.id, intraId: mentor.intraId, role: 'mentor' };
-  //       join = this.mentorsService.validateInfo(mentor);
-  //     }
-  //   } else if (profile['staff?']) {
-  //     join = true;
-  //     const bocal: Bocals = await this.bocalsService.findByIntra(intraId);
-  //     const newData: CreateBocalDto = { intraId };
-  //     if (!bocal) {
-  //       result = await this.bocalsService.createUser(newData);
-  //     } else {
-  //       result = await this.bocalsService.updateLogin(bocal, newData);
-  //     }
-  //   } else {
-  //     if (cursus.length < 2) {
-  //       throw new ForbiddenException('본과정 카뎃만 가입이 가능합니다.');
-  //     }
-  //     if (
-  //       cursus[1].grade === 'Learner' &&
-  //       (cursus[1].end_at ||
-  //         new Date(cursus[1].blackholed_at).getTime() <= Date.now())
-  //     ) {
-  //       throw new ForbiddenException('블랙홀에 빠진 카뎃은 이용이 불가합니다.');
-  //     }
-  //     const cadet: Cadets = await this.cadetsService.findByIntra(intraId);
-  //     const newData: CreateCadetDto = {
-  //       intraId,
-  //       profileImage,
-  //       isCommon: cursus[1].grade === 'Learner',
-  //       email,
-  //     };
-  //     if (!cadet) {
-  //       result = await this.cadetsService.createUser(newData);
-  //       join = false;
-  //     } else {
-  //       result = await this.cadetsService.updateLogin(cadet, newData);
-  //       join = this.cadetsService.validateInfo(cadet);
-  //     }
-  //   }
-  //   const jwt = await this.jwtService.sign({
-  //     sub: result.id,
-  //     username: result.intraId,
-  //     role: result.role,
-  //   });
-  //   return {
-  //     jwt,
-  //     user: { intraId: result.intraId, role: result.role, join },
-  //   };
-  // }
+  async createAndUpdateProfile(
+    userInfo: UserInfo42OriginDto,
+  ): Promise<JwtInfoAndJoin> {
+    //jwtトークンを発行するデータ
+    let jwtInfo: JwtInfo;
+    //最初ローグインをしたのに、会員情報入力したか確認
+    let isJoined: boolean;
+
+    //見やすく必要なデータ抽出
+    const email = userInfo.email;
+    const intraId = userInfo.login;
+    const profileImage = userInfo.image.link;
+    const cursus = userInfo.cursus_users;
+    const staff = userInfo.staff;
+
+    if (intraId.startsWith('m-')) {
+      const isMentor = await this.mentorsService.isMentor(intraId);
+
+      if (!isMentor) {
+        jwtInfo = await this.mentorsService.createUser(intraId);
+        isJoined = false;
+      } else {
+        const mentor: Mentors = await this.mentorsService.findByIntra(intraId);
+
+        jwtInfo = {
+          id: mentor.id,
+          intraId: mentor.intraId,
+          role: ROLES.MENTOR,
+        };
+        isJoined = this.mentorsService.validateInfo(mentor);
+      }
+
+      return {
+        jwtinfo: jwtInfo,
+        isJoined: isJoined,
+      };
+    }
+
+    if (staff) {
+      //現在はスタップの場合、追加で情報入力することはない
+      isJoined = true;
+
+      const isBocal = await this.bocalsService.isBocal(intraId);
+      if (!isBocal) {
+        jwtInfo = await this.bocalsService.createUser(intraId);
+      } else {
+        const bocal: Bocals = await this.bocalsService.findByIntra(intraId);
+        jwtInfo = await this.bocalsService.updateLogin(bocal, intraId);
+      }
+
+      return {
+        jwtinfo: jwtInfo,
+        isJoined: isJoined,
+      };
+    }
+
+    //カデットの場合
+    if (cursus.length < 2) {
+      throw new ForbiddenException('42cursusに属している方だけ、入られます');
+    }
+
+    const commonCircleIndex = 1;
+    if (cursus[commonCircleIndex].grade === 'Learner') {
+      if (cursus[commonCircleIndex].end_at) {
+        throw new ForbiddenException(
+          'ブラックホールに落ちたカデットは利用できません',
+        );
+      }
+
+      if (
+        cursus[commonCircleIndex].blackholed_at !== null &&
+        new Date(cursus[commonCircleIndex].blackholed_at).getTime() <=
+          Date.now()
+      ) {
+        throw new ForbiddenException(
+          'ブラックホールに落ちたカデットは利用できません',
+        );
+      }
+    }
+
+    const isCadet = await this.cadetsService.isCadet(intraId);
+    console.log(isCadet);
+
+    if (!isCadet) {
+      const newData: CreateCadetDto = {
+        intraId,
+        profileImage,
+        isCommon: cursus[1].grade === 'Learner',
+        email,
+      };
+
+      jwtInfo = await this.cadetsService.createUser(newData);
+      isJoined = false;
+    } else {
+      const cadet: Cadets = await this.cadetsService.findCadetByIntraId(
+        intraId,
+      );
+
+      const updateData: CreateCadetDto = {
+        intraId,
+        profileImage,
+        isCommon: cursus[1].grade === 'Learner',
+        email,
+      };
+
+      jwtInfo = await this.cadetsService.updateLogin(cadet, updateData);
+      isJoined = this.cadetsService.validateInfo(cadet);
+    }
+
+    return {
+      jwtinfo: jwtInfo,
+      isJoined: isJoined,
+    };
+  }
 }

@@ -8,15 +8,12 @@ export class AuthController {
 
   @Get('oauth/42')
   async signIn42Intra(@Query('code') authCode: string): Promise<string> {
-    //getProfile
+    //ユーザの情報を42APIからもらう
     const userProfile: UserInfo42OriginDto =
       await this.authService.getProfileBy42Intra(authCode);
 
-    //validateProfile
-    //   const role = this.authService.validateProfile(userProfile);
-
-    //   //saveProfile
-    //   this.authService.saveProfile();
+    //ユーザの情報バーリデーションと最初ローグインの場合DBに登録する
+    this.authService.createAndUpdateProfile(userProfile);
 
     //   //createJWT
 
