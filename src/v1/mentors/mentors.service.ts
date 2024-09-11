@@ -10,7 +10,7 @@ export class MentorsService {
   constructor(private mentorsRepository: MentorsRepository) {}
 
   async findByIntra(intraId: string): Promise<Mentors> {
-    return this.mentorsRepository.findByIntra(intraId);
+    return await this.mentorsRepository.findByIntra(intraId);
   }
 
   async createUser(intraId: string): Promise<JwtInfo> {
