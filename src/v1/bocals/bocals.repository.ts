@@ -34,13 +34,13 @@ export class BocalsRepository {
 
   async createUser(intraId: string): Promise<Bocals> {
     try {
-      const createdMentors: Bocals = this.bocalsRepository.create({
+      const createdBocals: Bocals = this.bocalsRepository.create({
         intraId: intraId,
       });
 
-      await this.bocalsRepository.save(createdMentors);
+      await this.bocalsRepository.save(createdBocals);
 
-      return createdMentors;
+      return createdBocals;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
     }
