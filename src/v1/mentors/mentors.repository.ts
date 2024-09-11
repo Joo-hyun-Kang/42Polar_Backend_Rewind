@@ -39,9 +39,9 @@ export class MentorsRepository {
         isActive: false,
       });
 
-      await this.mentorsRepository.save(createdMentors);
+      const updatedMentor = await this.mentorsRepository.save(createdMentors);
 
-      return createdMentors;
+      return updatedMentor;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
     }

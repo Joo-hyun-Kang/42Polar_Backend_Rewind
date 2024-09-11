@@ -38,9 +38,9 @@ export class BocalsRepository {
         intraId: intraId,
       });
 
-      await this.bocalsRepository.save(createdBocals);
+      const updatedBocal = await this.bocalsRepository.save(createdBocals);
 
-      return createdBocals;
+      return updatedBocal;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
     }
