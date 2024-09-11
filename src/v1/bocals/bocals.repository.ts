@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Bocals } from 'src/domain/typeorm/entity/bocal.entity';
 import { Repository } from 'typeorm';
@@ -11,14 +15,21 @@ export class BocalsRepository {
   ) {}
 
   async findByIntra(intraId: string): Promise<Bocals> {
+    let foundUser: Bocals;
+
     try {
-      const foundUser: Bocals = await this.bocalsRepository.findOneBy({
+      foundUser = await this.bocalsRepository.findOneBy({
         intraId,
       });
-      return foundUser;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
     }
+
+    if (!foundUser) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return foundUser;
   }
 
   async createUser(intraId: string): Promise<Bocals> {
@@ -37,6 +48,11 @@ export class BocalsRepository {
 
   async updateIntraId(bocal: Bocals, intraId: string): Promise<Bocals> {
     bocal.intraId = intraId;
-    return await this.bocalsRepository.save(bocal);
+
+    try {
+      return await this.bocalsRepository.save(bocal);
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+    }
   }
 }

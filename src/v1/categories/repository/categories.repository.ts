@@ -17,12 +17,24 @@ export class CategoriesRepository {
   async getCategories(): Promise<Categories[]> {
     const takeCount = 8;
 
-    return await this.categoriesRepository.find({
-      select: {
-        name: true,
-      },
-      take: takeCount,
-    });
+    let findedCategoires: Categories[];
+
+    try {
+      findedCategoires = await this.categoriesRepository.find({
+        select: {
+          name: true,
+        },
+        take: takeCount,
+      });
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+    }
+
+    if (!findedCategoires) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return findedCategoires;
   }
 
   //Categories->KeywordCategories->Keywordのデータを持っているオブジェクトを返す

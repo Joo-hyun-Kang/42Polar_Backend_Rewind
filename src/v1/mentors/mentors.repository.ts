@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { Repository } from 'typeorm';
@@ -11,14 +15,21 @@ export class MentorsRepository {
   ) {}
 
   async findByIntra(intraId: string): Promise<Mentors> {
+    let foundUser: Mentors;
+
     try {
-      const foundUser: Mentors = await this.mentorsRepository.findOneBy({
+      foundUser = await this.mentorsRepository.findOneBy({
         intraId,
       });
-      return foundUser;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
     }
+
+    if (!foundUser) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return foundUser;
   }
 
   async createUser(intraId: string): Promise<Mentors> {
