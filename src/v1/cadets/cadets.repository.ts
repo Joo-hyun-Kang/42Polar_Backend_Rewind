@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
+import { Cadets } from '../../domain/typeorm/entity/cadets.entity';
 import { Repository } from 'typeorm';
 import { CreateCadetDto } from './dto/create-cadet.dto';
 
@@ -43,7 +43,7 @@ export class CadetsRepository {
       });
 
       const updateCadet = await this.cadetsRepository.save(createdCadte);
-      
+
       return updateCadet;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);

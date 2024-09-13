@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
+import { Mentors } from '../../domain/typeorm/entity/mentors.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
