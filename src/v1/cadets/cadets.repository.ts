@@ -43,7 +43,7 @@ export class CadetsRepository {
       });
 
       const updateCadet = await this.cadetsRepository.save(createdCadte);
-
+      
       return updateCadet;
     } catch (error) {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION);

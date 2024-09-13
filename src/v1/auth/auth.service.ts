@@ -174,7 +174,6 @@ export class AuthService {
     }
 
     const isCadet = await this.cadetsService.isCadet(intraId);
-    console.log(isCadet);
 
     if (!isCadet) {
       const newData: CreateCadetDto = {

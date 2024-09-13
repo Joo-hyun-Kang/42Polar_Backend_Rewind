@@ -46,7 +46,6 @@ export class CadetsService {
 
   async isCadet(intraId: string): Promise<boolean> {
     try {
-      console.log(`231231321`);
       const cadet = await this.findCadetByIntraId(intraId);
       if (cadet) {
         return true;
