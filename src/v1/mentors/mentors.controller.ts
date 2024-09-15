@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { MentorDto } from './dto/mentor.dto';
@@ -16,10 +17,16 @@ import { RoleGuard } from '../auth/guards/role.guard';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { User } from '../auth/decorators/user.decorator';
 import { UpdateMentorDatailDto } from './dto/mentor-detail.dto';
+import { PaginationDto } from '../dto/pagination.dto';
+import { SimpleMentoringInfoDto } from './dto/log-pagination.dto';
+import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
 
 @Controller()
 export class MentorsController {
-  constructor(private mentorService: MentorsService) {}
+  constructor(
+    private mentorService: MentorsService,
+    private mentoringLogsService: MentoringLogsService,
+  ) {}
 
   /*
    * フロントのメンター詳細ページでメンター情報を見せる時に使う
@@ -49,5 +56,21 @@ export class MentorsController {
     }
 
     return await this.mentorService.updateMentorDetails(user.intraId, body);
+  }
+
+  /*
+   * フロントのメンター詳細ページでメンターに行われたメンタリングリストに使用
+   * 既存コード：サービスでレポコードを分離
+   */
+  @Get('simplelogs/:intraId')
+  async getSimpleLogs(
+    @Param('intraId') mentorIntraId: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<SimpleMentoringInfoDto> {
+    const result = await this.mentoringLogsService.getSimpleLogsPagination(
+      mentorIntraId,
+      paginationDto,
+    );
+    return { logs: result[0], total: result[1] };
   }
 }

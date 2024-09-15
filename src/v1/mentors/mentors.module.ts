@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MentorsController } from './mentors.controller';
 import { MentorsRepository } from './repository/mentors.repository';
 import { JwtModule } from '@nestjs/jwt';
+import { MentoringLogsModule } from '../mentoring-logs/mentoring-logs.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt';
         };
       },
     }),
+    MentoringLogsModule,
   ],
   controllers: [MentorsController],
   providers: [MentorsService, MentorsRepository],

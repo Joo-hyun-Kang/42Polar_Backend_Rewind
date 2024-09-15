@@ -1,0 +1,44 @@
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  LOG_STATUS,
+  MentoringLogs,
+} from 'src/domain/typeorm/entity/mentoring-logs.entity';
+import { PaginationDto } from 'src/v1/dto/pagination.dto';
+import { SimpleLogDto } from 'src/v1/mentors/dto/simple-log.dto';
+import { Repository } from 'typeorm';
+
+@Injectable()
+export class MentoringLogsRepository {
+  constructor(
+    @InjectRepository(MentoringLogs)
+    private mentoringLogsRepository: Repository<MentoringLogs>,
+  ) {}
+
+  async getSimpeLogs(mentorIntraId: string, paginationDto: PaginationDto) {
+    try {
+      const simpleLogs: [SimpleLogDto[], number] =
+        await this.mentoringLogsRepository.findAndCount({
+          select: {
+            id: true,
+            createdAt: true,
+            meetingAt: true,
+            topic: true,
+            status: true,
+            meetingStart: true,
+          },
+          where: {
+            mentors: { intraId: mentorIntraId },
+            status: LOG_STATUS.DONE,
+          },
+          take: paginationDto.take,
+          skip: paginationDto.take * (paginationDto.page - 1),
+          order: { meetingAt: 'DESC' },
+        });
+
+      return simpleLogs;
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+}
