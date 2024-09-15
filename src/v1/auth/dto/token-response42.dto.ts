@@ -1,0 +1,7 @@
+export class TokenResponse42Dto {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+  create_at: number;
+}
