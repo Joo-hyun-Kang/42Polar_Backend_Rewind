@@ -4,9 +4,21 @@ import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MentorsController } from './mentors.controller';
 import { MentorsRepository } from './repository/mentors.repository';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Mentors])],
+  imports: [
+    TypeOrmModule.forFeature([Mentors]),
+    JwtModule.registerAsync({
+      useFactory: () => {
+        return {
+          global: true,
+          secret: process.env.JWT_SECRET,
+          signOptions: { expiresIn: process.env.JWT_EXPIRE },
+        };
+      },
+    }),
+  ],
   controllers: [MentorsController],
   providers: [MentorsService, MentorsRepository],
   exports: [MentorsService],

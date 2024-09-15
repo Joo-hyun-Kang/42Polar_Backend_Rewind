@@ -27,7 +27,7 @@ export class CategoriesRepository {
         take: takeCount,
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!findedCategoires) {
@@ -49,7 +49,7 @@ export class CategoriesRepository {
         .where('category.name = :name', { name })
         .getOne();
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!category) {

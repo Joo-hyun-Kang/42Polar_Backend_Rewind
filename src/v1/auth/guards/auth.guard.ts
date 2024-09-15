@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 
 interface ClientRequest {
   request: Request;
-  clinetCookies: ClientCookieDto;
+  accessToken: string;
 }
 
 interface ClientCookieDto {
@@ -24,16 +24,24 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    let accessToken: string = null;
+    if (request.headers.cookie) {
+      accessToken = this.parseCookies(request.headers.cookie);
+    }
+
+    if (request.headers.authorization) {
+      accessToken = this.extractToken(request.headers.authorization);
+    }
 
     const ClientRequest = {
       request: request,
-      clinetCookies: this.parseCookies(request.headers.cookie),
+      accessToken: accessToken,
     };
 
     return await this.authenticateToken(ClientRequest);
   }
 
-  private parseCookies(cookie: string): ClientCookieDto {
+  private parseCookies(cookie: string): string {
     if (!cookie) {
       throw new UnauthorizedException(process.env.UNAUTHORIZEDEXCEPTION);
     }
@@ -47,24 +55,24 @@ export class AuthGuard implements CanActivate {
     // info_joinをbooleanに変換
     const infoJoinValue = cookieObject['info_join'] === 'true';
 
-    return {
-      access_token: cookieObject['access_token'],
-      intra_id: cookieObject['intra_id'],
-      user_role: cookieObject['user_role'],
-      info_join: infoJoinValue,
-    };
+    return cookieObject['access_token'];
+  }
+
+  private extractToken(authorization: string): string | undefined {
+    const [type, token] = authorization?.split(' ') ?? [];
+    return type === 'bearer' ? token : undefined;
   }
 
   private async authenticateToken(
     clientRequest: ClientRequest,
   ): Promise<boolean> {
-    if (!clientRequest.clinetCookies.access_token) {
+    if (!clientRequest.accessToken) {
       throw new UnauthorizedException(process.env.UNAUTHORIZEDEXCEPTION);
     }
 
     try {
       const payload = await this.jwtService.verifyAsync(
-        clientRequest.clinetCookies.access_token,
+        clientRequest.accessToken,
         {
           secret: process.env.JWT_SECRET,
         },

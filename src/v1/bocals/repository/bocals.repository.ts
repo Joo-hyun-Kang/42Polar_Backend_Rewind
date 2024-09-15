@@ -22,7 +22,7 @@ export class BocalsRepository {
         intraId,
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!foundUser) {
@@ -42,7 +42,7 @@ export class BocalsRepository {
 
       return updatedBocal;
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 
@@ -52,7 +52,7 @@ export class BocalsRepository {
     try {
       return await this.bocalsRepository.save(bocal);
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 }

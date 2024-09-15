@@ -23,7 +23,7 @@ export class CadetsRepository {
         intraId,
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!foundUser) {
@@ -46,7 +46,7 @@ export class CadetsRepository {
 
       return updateCadet;
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 
@@ -54,7 +54,7 @@ export class CadetsRepository {
     try {
       return await this.cadetsRepository.save(updatedCadet);
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 }

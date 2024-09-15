@@ -21,7 +21,7 @@ export class MentorsRepository {
         intraId: intraId,
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!mentor) {
@@ -39,7 +39,7 @@ export class MentorsRepository {
         intraId,
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!foundUser) {
@@ -60,7 +60,17 @@ export class MentorsRepository {
 
       return updatedMentor;
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION);
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async save(mentor: Mentors): Promise<boolean> {
+    try {
+      await this.mentorsRepository.save(mentor);
+
+      return true;
+    } catch (err) {
+      throw new ConflictException(err, process.env.CONFLICTEXCEPTION_SAVE);
     }
   }
 }
