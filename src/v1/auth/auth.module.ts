@@ -5,12 +5,14 @@ import { MentorsModule } from '../mentors/mentors.module';
 import { BocalsModule } from '../bocals/bocals.module';
 import { CadetsModule } from '../cadets/cadets.module';
 import { JwtModule } from '@nestjs/jwt';
+import { BullQueueModule } from '../redis/bull-queue.module';
 
 @Module({
   imports: [
     MentorsModule,
     BocalsModule,
     CadetsModule,
+    BullQueueModule,
     JwtModule.registerAsync({
       useFactory: () => {
         return {

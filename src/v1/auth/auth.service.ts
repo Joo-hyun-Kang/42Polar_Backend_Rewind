@@ -15,6 +15,7 @@ import { BocalsService } from '../bocals/bocals.service';
 import { MentorsService } from '../mentors/mentors.service';
 import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
 import { CreateCadetDto } from '../cadets/dto/create-cadet.dto';
+import { LoginProducer } from '../redis/login-producer';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private cadetsService: CadetsService,
     private bocalsService: BocalsService,
     private mentorsService: MentorsService,
+    private loginProducer: LoginProducer,
   ) {}
 
   async getProfileBy42Intra(authCode: string): Promise<UserInfo42OriginDto> {
@@ -29,7 +31,7 @@ export class AuthService {
     const response: TokenResponse42Dto =
       await this.getAcessToken<TokenResponse42Dto>(authCode, providerUrl);
 
-    return await this.getProfile(response.access_token);
+    return await this.loginProducer.addJob(response.access_token);
   }
 
   async getProfile(accessToken: string): Promise<UserInfo42OriginDto> {
