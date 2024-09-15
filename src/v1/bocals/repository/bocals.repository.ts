@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Bocals } from '../../domain/typeorm/entity/bocal.entity';
+import { Bocals } from '../../../domain/typeorm/entity/bocal.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

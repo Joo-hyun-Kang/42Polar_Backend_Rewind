@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CadetsRepository } from './cadets.repository';
 import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
 import { CreateCadetDto } from './dto/create-cadet.dto';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { ROLES } from '../auth/enum/roles.enum';
+import { CadetsRepository } from './repository/cadets.repository';
 
 @Injectable()
 export class CadetsService {

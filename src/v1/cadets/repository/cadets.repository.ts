@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cadets } from '../../domain/typeorm/entity/cadets.entity';
+import { Cadets } from '../../../domain/typeorm/entity/cadets.entity';
 import { Repository } from 'typeorm';
-import { CreateCadetDto } from './dto/create-cadet.dto';
+import { CreateCadetDto } from '../dto/create-cadet.dto';
 
 @Injectable()
 export class CadetsRepository {
