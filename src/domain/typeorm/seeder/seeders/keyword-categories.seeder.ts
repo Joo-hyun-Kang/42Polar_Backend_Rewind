@@ -15,27 +15,22 @@ export class KeywordCategoriesSeeder implements Seeder {
     console.log('Seeding keyword-categories...');
 
     await Promise.all(
-      keywordCategoriesData.map(async data => {
+      keywordCategoriesData.map(async (data) => {
         const category = await categoryRepository.findOne({
-          select: { id: true },
           where: { name: data.categories },
         });
 
         await Promise.all(
-          data.keywords.map(async keywordData => {
+          data.keywords.map(async (keywordData) => {
             const keyword = await keywordRepository.findOne({
-              select: { id: true },
               where: { name: keywordData },
             });
 
-            //TypeORM の create メソッドでは、リレーションのプロパティに Promise を渡すと正しく動作しない場合がある
-            //そのため、KeywordCategories修正
-            const newData = keywordCategoriesRepository.create({
-              keywords: keyword,
-              categories: category,
-            });
+            const keywordCategories = new KeywordCategories();
+            keywordCategories.categories = Promise.resolve(category);
+            keywordCategories.keywords = Promise.resolve(keyword);
 
-            return keywordCategoriesRepository.save(newData);
+            return await keywordCategoriesRepository.save(keywordCategories);
           }),
         );
       }),

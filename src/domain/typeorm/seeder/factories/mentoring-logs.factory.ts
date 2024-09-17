@@ -14,11 +14,13 @@ export const MentoringLogsFactory = setSeederFactory(
   (faker, meta: mentoringLogsFactoryMeta) => {
     const mentoringLogs = new MentoringLogs();
 
-    mentoringLogs.cadets =
-      meta.cadetsMeta[faker.number.int(meta.cadetsMeta.length - 1)];
+    mentoringLogs.cadets = Promise.resolve(
+      meta.cadetsMeta[faker.number.int(meta.cadetsMeta.length - 1)],
+    );
 
-    mentoringLogs.mentors =
-      meta.mentorsMeta[faker.number.int(meta.mentorsMeta.length - 1)];
+    mentoringLogs.mentors = Promise.resolve(
+      meta.mentorsMeta[faker.number.int(meta.mentorsMeta.length - 1)],
+    );
 
     mentoringLogs.topic = fakerJA.lorem.sentence(4);
 

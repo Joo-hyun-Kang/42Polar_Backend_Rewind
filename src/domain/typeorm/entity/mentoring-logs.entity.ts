@@ -57,11 +57,11 @@ export class MentoringLogs {
   updateAt: Date;
 
   @ManyToOne(() => Mentors, (Mentors) => Mentors.mentoringLogs)
-  mentors: Mentors | Promise<Mentors>;
+  mentors: Promise<Mentors>;
 
   @ManyToOne(() => Cadets, (Cadets) => Cadets.mentoringLogs)
-  cadets: Cadets | Promise<Cadets>;
+  cadets: Promise<Cadets>;
 
   @OneToOne(() => Reports, (Reports) => Reports.mentoringLogs)
-  reports: Reports | Promise<Reports>;
+  reports: Promise<Reports>;
 }

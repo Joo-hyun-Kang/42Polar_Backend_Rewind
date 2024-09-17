@@ -30,8 +30,8 @@ export class Comments {
   updateAt: Date;
 
   @ManyToOne(() => Mentors, (Mentors) => Mentors.comments)
-  mentors: Mentors | Promise<Mentors>;
+  mentors: Promise<Mentors>;
 
   @ManyToOne(() => Cadets, (Cadets) => Cadets.comments)
-  cadets: Cadets | Promise<Cadets>;
+  cadets: Promise<Cadets>;
 }

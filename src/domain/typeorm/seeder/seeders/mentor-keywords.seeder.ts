@@ -12,7 +12,7 @@ export class MentorKeywordsSeeder implements Seeder {
     const keywordRepository = dataSource.getRepository(Keywords);
 
     await Promise.all(
-      mentorKeywordsData.map(async mentorKeyword => {
+      mentorKeywordsData.map(async (mentorKeyword) => {
         const selectedMentor = await mentorRepository.findOne({
           select: { id: true },
           where: { name: mentorKeyword.mentor.name },
@@ -24,7 +24,7 @@ export class MentorKeywordsSeeder implements Seeder {
         }
 
         await Promise.all(
-          mentorKeyword.keywords.map(async keyword => {
+          mentorKeyword.keywords.map(async (keyword) => {
             const selectedKeyword = await keywordRepository.findOne({
               select: { id: true },
               where: { name: keyword },
@@ -35,12 +35,11 @@ export class MentorKeywordsSeeder implements Seeder {
               return;
             }
 
-            const newData = mentorKeywordRepository.create({
-              mentors: selectedMentor,
-              keywords: selectedKeyword,
-            });
+            const mentorKeywords = new MentorKeywords();
+            mentorKeywords.mentors = Promise.resolve(selectedMentor);
+            mentorKeywords.keywords = Promise.resolve(selectedKeyword);
 
-            return await mentorKeywordRepository.save(newData);
+            return await await mentorKeywordRepository.save(mentorKeywords);
           }),
         );
 

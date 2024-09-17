@@ -79,8 +79,8 @@ export class Reports {
   createdAt: Date;
 
   @ManyToOne(() => Mentors, (Mentors) => Mentors.reports)
-  mentors: Mentors | Promise<Mentors>;
+  mentors: Promise<Mentors>;
 
   @ManyToOne(() => Cadets, (Cadets) => Cadets.reports)
-  cadets: Cadets | Promise<Cadets>;
+  cadets: Promise<Cadets>;
 }
