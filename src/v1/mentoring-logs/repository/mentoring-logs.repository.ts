@@ -41,4 +41,27 @@ export class MentoringLogsRepository {
       throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
+
+  async getMentoringsLists(intraId: string, pagination: PaginationDto) {
+    try {
+      /*
+       * findAndCountはクエリが２回でる
+       * データの取得（SELECT クエリ）
+       * 全体の件数の取得（COUNT クエリ）
+       */
+      const result = await this.mentoringLogsRepository.findAndCount({
+        relations: { cadets: true, reports: true },
+        where: {
+          mentors: { intraId },
+        },
+        take: pagination.take,
+        skip: pagination.take * (pagination.page - 1),
+        order: { createdAt: 'DESC' },
+      });
+
+      return result;
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
 }

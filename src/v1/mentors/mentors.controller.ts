@@ -20,6 +20,7 @@ import { UpdateMentorDatailDto } from './dto/mentor-detail.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SimpleMentoringInfoDto } from './dto/log-pagination.dto';
 import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
+import { MentoringInfoDto } from './dto/mentoring-info.dto';
 
 @Controller()
 export class MentorsController {
@@ -27,6 +28,23 @@ export class MentorsController {
     private mentorService: MentorsService,
     private mentoringLogsService: MentoringLogsService,
   ) {}
+
+  /*
+   * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
+   * 既存コード：サービスでレポコードを分離
+   */
+  @Get('mentorings')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async getMentoringsLists(
+    @User() user: JwtInfo,
+    @Query() pagination: PaginationDto,
+  ): Promise<MentoringInfoDto> {
+    return await this.mentoringLogsService.getMentoringsLists(
+      user.intraId,
+      pagination,
+    );
+  }
 
   /*
    * フロントのメンター詳細ページでメンター情報を見せる時に使う
