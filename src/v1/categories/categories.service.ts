@@ -4,8 +4,8 @@ import { CategoriesRepository } from './repository/categories.repository';
 import { Categories } from 'src/domain/typeorm/entity/categories.entity';
 import { CategoryKeywordsDto } from './dto/category-keyword.dto';
 import { MentorsListByCategory } from './dto/mentors-list.interface';
-import { KeywordsRepository } from './repository/keywords.repository';
 import { MentorsListElement } from './dto/mentors-list-element.interface';
+import { KeywordsService } from './keywords.service';
 
 export interface MentorRawSimpleInfo {
   id: string;
@@ -22,7 +22,7 @@ export interface MentorRawSimpleInfo {
 export class CategoriesService {
   constructor(
     private categoriesRepository: CategoriesRepository,
-    private keywordsRepository: KeywordsRepository,
+    private keywordsService: KeywordsService,
   ) {}
 
   async getCategories(): Promise<CategoriesDto[]> {
@@ -64,7 +64,7 @@ export class CategoriesService {
       reqesutKeywords?.length > 0 ? reqesutKeywords : categoryKeyword.keywords;
 
     const mentorList: MentorsListElement[] =
-      await this.keywordsRepository.getMentorsByKeywords(
+      await this.keywordsService.getMentorsByKeywords(
         filterdCategoryKeyword,
         requestMentorNameOrIntraId,
       );
