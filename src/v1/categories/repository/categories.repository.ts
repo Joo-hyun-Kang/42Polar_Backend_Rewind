@@ -58,4 +58,29 @@ export class CategoriesRepository {
 
     return category;
   }
+
+  async getAllCategoryKeyword(): Promise<Categories[]> {
+    let categories: Categories[] = null;
+    try {
+      categories = await this.categoriesRepository.find({
+        relations: {
+          keywordCategories: {
+            keywords: true,
+          },
+        },
+        select: {
+          name: true,
+          keywordCategories: true,
+        },
+      });
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!categories) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return categories;
+  }
 }

@@ -75,4 +75,30 @@ export class CategoriesService {
       mentors: mentorList,
     };
   }
+
+  async getAllCategoryKeyword(): Promise<CategoryKeywordsDto[]> {
+    const categories = this.categoriesRepository.getAllCategoryKeyword();
+
+    //Categories->KeywordCategories->Keywordのデータを持っている仕組み、
+    //CategoryKeywordsDto[]に合わせる
+    const result: CategoryKeywordsDto[] = await Promise.all(
+      (
+        await categories
+      ).map(async (e) => {
+        return {
+          category: e.name,
+          keywords: await Promise.all(
+            (
+              await e.keywordCategories
+            ).map(async (categoryKeyword) => {
+              const keyword = await categoryKeyword.keywords;
+              return keyword.name;
+            }),
+          ),
+        };
+      }),
+    );
+
+    return result;
+  }
 }

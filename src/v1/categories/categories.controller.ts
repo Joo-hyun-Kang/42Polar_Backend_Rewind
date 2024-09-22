@@ -4,12 +4,17 @@ import {
   Get,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoriesDto } from './dto/categories.dto';
 import { CategoryKeywordsDto } from './dto/category-keyword.dto';
 import { MentorKeywordsDto } from './dto/mentor-keywords.dto';
 import { MentorsListByCategory } from './dto/mentors-list.interface';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ROLES } from '../auth/enum/roles.enum';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
 
 @Controller()
 export class CategoriesController {
@@ -22,6 +27,17 @@ export class CategoriesController {
   @Get()
   async getCategories(): Promise<CategoriesDto[]> {
     return await this.categoriesService.getCategories();
+  }
+
+  /*
+   * メンター詳細ページでメンタが自分のキーワードを追加、削除する時に使う
+   * 既存コード：サービズからレポジトリロジック分離、DBデータを返すDTOに変換の際、Promise.All利用して非同期処理
+   */
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  @Get('/category/keywords')
+  async getCategoriesWithKeywords(): Promise<CategoryKeywordsDto[]> {
+    return await this.categoriesService.getAllCategoryKeyword();
   }
 
   /*
