@@ -21,6 +21,7 @@ import { PaginationDto } from '../dto/pagination.dto';
 import { SimpleMentoringInfoDto } from './dto/log-pagination.dto';
 import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
 import { MentoringInfoDto } from './dto/mentoring-info.dto';
+import { JoinMentorDto } from './dto/join-mentor-dto';
 
 @Controller()
 export class MentorsController {
@@ -58,7 +59,23 @@ export class MentorsController {
   }
 
   /*
+   * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
+   * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
+   */
+  @Patch('join')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async join(
+    @Body() body: JoinMentorDto,
+    @User() user: JwtInfo,
+  ): Promise<boolean> {
+    await this.mentorService.updateMentorDetails(user.intraId, body);
+    return true;
+  }
+
+  /*
    * フロントのメンター詳細ページでメンター情報をアップデートするAPI
+   * Emailは別のコントローラーによって登録される→メール認証のため
    * 既存コード：サービスでレポコードを分離
    */
   @Patch(':intraId')
