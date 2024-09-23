@@ -4,8 +4,8 @@ import { CategoriesRepository } from './repository/categories.repository';
 import { Categories } from 'src/domain/typeorm/entity/categories.entity';
 import { CategoryKeywordsDto } from './dto/category-keyword.dto';
 import { MentorsListByCategory } from './dto/mentors-list.interface';
-import { KeywordsRepository } from './repository/keywords.repository';
 import { MentorsListElement } from './dto/mentors-list-element.interface';
+import { KeywordsService } from './keywords.service';
 
 export interface MentorRawSimpleInfo {
   id: string;
@@ -22,7 +22,7 @@ export interface MentorRawSimpleInfo {
 export class CategoriesService {
   constructor(
     private categoriesRepository: CategoriesRepository,
-    private keywordsRepository: KeywordsRepository,
+    private keywordsService: KeywordsService,
   ) {}
 
   async getCategories(): Promise<CategoriesDto[]> {
@@ -64,7 +64,7 @@ export class CategoriesService {
       reqesutKeywords?.length > 0 ? reqesutKeywords : categoryKeyword.keywords;
 
     const mentorList: MentorsListElement[] =
-      await this.keywordsRepository.getMentorsByKeywords(
+      await this.keywordsService.getMentorsByKeywords(
         filterdCategoryKeyword,
         requestMentorNameOrIntraId,
       );
@@ -74,5 +74,31 @@ export class CategoriesService {
       mentorCount: mentorList.length,
       mentors: mentorList,
     };
+  }
+
+  async getAllCategoryKeyword(): Promise<CategoryKeywordsDto[]> {
+    const categories = this.categoriesRepository.getAllCategoryKeyword();
+
+    //Categories->KeywordCategories->Keywordのデータを持っている仕組み、
+    //CategoryKeywordsDto[]に合わせる
+    const result: CategoryKeywordsDto[] = await Promise.all(
+      (
+        await categories
+      ).map(async (e) => {
+        return {
+          category: e.name,
+          keywords: await Promise.all(
+            (
+              await e.keywordCategories
+            ).map(async (categoryKeyword) => {
+              const keyword = await categoryKeyword.keywords;
+              return keyword.name;
+            }),
+          ),
+        };
+      }),
+    );
+
+    return result;
   }
 }

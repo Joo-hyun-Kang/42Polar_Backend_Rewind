@@ -14,11 +14,13 @@ export const CommentsFactories = setSeederFactory(
   (faker, meta: CommentsFactoryMeta) => {
     const comments = new Comments();
 
-    comments.cadets =
-      meta.cadetsMeta[faker.number.int(meta.cadetsMeta.length - 1)];
+    comments.cadets = Promise.resolve(
+      meta.cadetsMeta[faker.number.int(meta.cadetsMeta.length - 1)],
+    );
 
-    comments.mentors =
-      meta.mentorsMeta[faker.number.int(meta.mentorsMeta.length - 1)];
+    comments.mentors = Promise.resolve(
+      meta.mentorsMeta[faker.number.int(meta.mentorsMeta.length - 1)],
+    );
 
     comments.content = fakerJA.lorem.lines(2);
 

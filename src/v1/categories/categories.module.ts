@@ -4,15 +4,31 @@ import { CategoriesService } from './categories.service';
 import { CategoriesRepository } from './repository/categories.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Categories } from 'src/domain/typeorm/entity/categories.entity';
-import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { Keywords } from 'src/domain/typeorm/entity/keywords.entity';
-import { KeywordCategories } from 'src/domain/typeorm/entity/keywordCategories.entity';
-import { MentorKeywords } from 'src/domain/typeorm/entity/mentorKeywords.entity';
 import { KeywordsRepository } from './repository/keywords.repository';
+import { KeywordsService } from './keywords.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Categories, Keywords])],
+  imports: [
+    TypeOrmModule.forFeature([Categories, Keywords]),
+    JwtModule.registerAsync({
+      useFactory: () => {
+        return {
+          global: true,
+          secret: process.env.JWT_SECRET,
+          signOptions: { expiresIn: process.env.JWT_EXPIRE },
+        };
+      },
+    }),
+  ],
   controllers: [CategoriesController],
-  providers: [CategoriesService, CategoriesRepository, KeywordsRepository],
+  providers: [
+    CategoriesService,
+    CategoriesRepository,
+    KeywordsService,
+    KeywordsRepository,
+  ],
+  exports: [KeywordsService],
 })
 export class CategoriesModule {}

@@ -28,7 +28,7 @@ export class KeywordsSeeder implements Seeder {
       );
 
       const keywordsNotUndefindes = keywords.filter(
-        keyword => keyword !== undefined,
+        (keyword) => keyword !== undefined,
       );
 
       await keywordRepo.save(keywordsNotUndefindes);

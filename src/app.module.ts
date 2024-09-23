@@ -7,6 +7,7 @@ import {
 import { CategoriesModule } from './v1/categories/categories.module';
 import { RouterModule } from '@nestjs/core';
 import { V1Module } from './v1/v1.module';
+import { MentorsModule } from './v1/mentors/mentors.module';
 
 @Module({
   imports: [
@@ -19,6 +20,10 @@ import { V1Module } from './v1/v1.module';
           {
             path: 'categories',
             module: CategoriesModule,
+          },
+          {
+            path: 'mentors',
+            module: MentorsModule,
           },
         ],
       },

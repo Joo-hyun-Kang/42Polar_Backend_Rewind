@@ -3,9 +3,9 @@ import { CategoriesModule } from './categories/categories.module';
 import { AuthModule } from './auth/auth.module';
 import { V1Controller } from './v1.controller';
 import { MentorsModule } from './mentors/mentors.module';
-import { BocalsService } from './bocals/bocals.service';
 import { BocalsModule } from './bocals/bocals.module';
 import { CadetsModule } from './cadets/cadets.module';
+import { MentoringLogsModule } from './mentoring-logs/mentoring-logs.module';
 
 @Module({
   imports: [
@@ -14,6 +14,7 @@ import { CadetsModule } from './cadets/cadets.module';
     MentorsModule,
     BocalsModule,
     CadetsModule,
+    MentoringLogsModule,
   ],
   controllers: [V1Controller],
   providers: [],

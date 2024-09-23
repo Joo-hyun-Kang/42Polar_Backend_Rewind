@@ -55,10 +55,15 @@ export const entityTsOption: EntityOption = {
 //                                      [MentorsSeeder], [CadetsSeeder, CadetsFactory] > [MentoringLogsSeeder, MentoringLogsFactory]
 //                                      [MentorsSeeder], [CadetsSeeder, CadetsFactory], [MentoringLogsSeeder, MentoringLogsFactory] > [ReportsSeeder, ReportsFactory]
 
+// 初回、Seeding全体で入れること可能である
+// ２回以上には、
+// [KeywordsSeeder, KeywordsFactories], [CategoriesSeeder, CategoriesFactory]  > KeywordCategoriesSeederは注釈必要
+//  Keyword,Categoriesはデータを新しく生成しなし、seeder/dataフォルダーから決まっているデータを持ってくる状況である
+
 export const seedingOption: SeederOptions = {
   factories: [
-    CategoriesFactory,
-    KeywordsFactories,
+    // CategoriesFactory,
+    // KeywordsFactories,
     CommentsFactories,
     CadetsFactory,
     CommentsFactories,
@@ -66,9 +71,9 @@ export const seedingOption: SeederOptions = {
     ReportsFactory,
   ],
   seeds: [
-    CategoriesSeeder,
-    KeywordsSeeder,
-    KeywordCategoriesSeeder,
+    // CategoriesSeeder,
+    // KeywordsSeeder,
+    // KeywordCategoriesSeeder,
     MentorsSeeder,
     MentorKeywordsSeeder,
     CadetsSeeder,

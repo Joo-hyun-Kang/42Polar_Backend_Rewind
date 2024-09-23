@@ -1,7 +1,8 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Keywords } from 'src/domain/typeorm/entity/keywords.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { MentorsListElement } from '../dto/mentors-list-element.interface';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 export class KeywordsRepository {
   constructor(
@@ -61,5 +62,25 @@ export class KeywordsRepository {
       },
       keywords: value.keywordsname,
     }));
+  }
+
+  async getKeywords(keywords: string[]): Promise<Keywords[]> {
+    let keywordsEntity;
+
+    try {
+      keywordsEntity = await this.keywordsRepository.find({
+        where: {
+          name: In(keywords),
+        },
+      });
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!keywordsEntity) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return keywordsEntity;
   }
 }

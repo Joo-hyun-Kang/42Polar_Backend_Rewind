@@ -8,8 +8,8 @@ export class MentorKeywords {
   Id: string;
 
   @ManyToOne(() => Keywords, (Keywords) => Keywords.id)
-  keywords: Keywords | Promise<Keywords>;
+  keywords: Promise<Keywords>;
 
   @ManyToOne(() => Mentors, (Mentors) => Mentors.id)
-  mentors: Mentors | Promise<Mentors>;
+  mentors: Promise<Mentors>;
 }

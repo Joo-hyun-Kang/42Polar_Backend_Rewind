@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BocalsRepository } from './bocals.repository';
 import { Bocals } from 'src/domain/typeorm/entity/bocal.entity';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { ROLES } from '../auth/enum/roles.enum';
+import { BocalsRepository } from './repository/bocals.repository';
 
 @Injectable()
 export class BocalsService {
