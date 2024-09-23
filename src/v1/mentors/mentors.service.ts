@@ -220,4 +220,17 @@ export class MentorsService {
 
     return this.mentorKeywordsService.updateMentorToKeywords(mentor, keywords);
   }
+
+  async getMentorKeywordNamesOfMentor(mentorIntra): Promise<string[]> {
+    const mentorKeywords = await this.mentorKeywordsService.getMentorKeywords(
+      mentorIntra,
+    );
+    const keywords = await this.mentorKeywordsService.getKeywords(
+      mentorKeywords,
+    );
+
+    return keywords.map((e) => {
+      return e.name;
+    });
+  }
 }

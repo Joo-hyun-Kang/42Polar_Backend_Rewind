@@ -48,6 +48,17 @@ export class MentorsController {
   }
 
   /*
+   * メンター詳細ページでメンタが自分のキーワードを見える際に使用
+   * 既存コード：サービズからレポジトリロジック分離
+   */
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  @Get('/:intraId/keywords')
+  async getKeywordNames(@Param('intraId') intraId: string): Promise<string[]> {
+    return this.mentorService.getMentorKeywordNamesOfMentor(intraId);
+  }
+
+  /*
    * メンター詳細ページでメンタが自分のキーワードをアップデートする際に使う
    * 既存コード：クエリ最適化（キーワード数回→４回）、サービズからレポジトリロジック分離
    */

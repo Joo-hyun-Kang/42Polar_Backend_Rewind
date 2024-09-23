@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Keywords } from 'src/domain/typeorm/entity/keywords.entity';
 import { MentorKeywords } from 'src/domain/typeorm/entity/mentorKeywords.entity';
@@ -51,5 +51,25 @@ export class MentorKeywordsRepository {
     }
 
     return true;
+  }
+
+  async getMentorKeywords(mentorIntra: string): Promise<MentorKeywords[]> {
+    let mentorKeywords: MentorKeywords[];
+
+    try {
+      mentorKeywords = await this.mentorKeywordsRepository.find({
+        relations: { mentors: true, keywords: true },
+        select: {},
+        where: { mentors: { intraId: mentorIntra } },
+      });
+    } catch (error) {
+      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!mentorKeywords) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return mentorKeywords;
   }
 }
