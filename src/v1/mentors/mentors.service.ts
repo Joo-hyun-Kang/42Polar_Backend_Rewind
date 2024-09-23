@@ -210,11 +210,6 @@ export class MentorsService {
     intraId: string,
     selectedKeywords: string[],
   ): Promise<boolean> {
-    // const filteredMentorKeywords = await this.getFilteredMentorKeywords(
-    //   intraId,
-    //   selectedKeywords,
-    // );
-
     const mentor = await this.mentorsRepository.findByIntra(intraId);
 
     //　selectedKeywordsが空いている場合this.keywordsService.getKeywordsからDBのFind失敗例外を投げる
