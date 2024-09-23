@@ -48,6 +48,29 @@ export class MentorsController {
   }
 
   /*
+   * メンター詳細ページでメンタが自分のキーワードをアップデートする際に使う
+   * 既存コード：クエリ最適化（キーワード数回→４回）、サービズからレポジトリロジック分離
+   */
+  @Patch(':intraId/keywords')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async updateMentorKeywords(
+    @User() user: JwtInfo,
+    @Param('intraId') intraId: string,
+    @Body('keywords') keywords: string[],
+  ): Promise<boolean> {
+    if (user.intraId !== intraId) {
+      throw new BadRequestException(process.env.UNAUTHORIZEDEXCEPTION);
+    }
+
+    if (!keywords) {
+      throw new BadRequestException(process.env.UNCOMPLETEREQUEST);
+    }
+
+    return await this.mentorService.updateMentorKeywords(intraId, keywords);
+  }
+
+  /*
    * フロントのメンター詳細ページでメンター情報を見せる時に使う
    * 既存コード：サービスでレポコードを分離、フロントコードでデフォルトイメージで見えるようにコード修正
    */

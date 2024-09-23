@@ -29,5 +29,6 @@ import { JwtModule } from '@nestjs/jwt';
     KeywordsService,
     KeywordsRepository,
   ],
+  exports: [KeywordsService],
 })
 export class CategoriesModule {}

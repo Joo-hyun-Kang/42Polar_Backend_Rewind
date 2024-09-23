@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { KeywordsRepository } from './repository/keywords.repository';
 import { MentorsListElement } from './dto/mentors-list-element.interface';
+import { Keywords } from 'src/domain/typeorm/entity/keywords.entity';
 
 @Injectable()
 export class KeywordsService {
@@ -14,5 +15,9 @@ export class KeywordsService {
       keywords,
       MentorNameOrIntraId,
     );
+  }
+
+  async getKeywords(keywords: string[]): Promise<Keywords[]> {
+    return this.keywordsRepository.getKeywords(keywords);
   }
 }

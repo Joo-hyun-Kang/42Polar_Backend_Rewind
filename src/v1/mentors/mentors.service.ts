@@ -7,10 +7,16 @@ import { AvailableTimeDto } from './dto/available-time.dto';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { ROLES } from '../auth/enum/roles.enum';
 import { UpdateMentorDatailDto } from './dto/mentor-detail.dto';
+import { KeywordsService } from '../categories/keywords.service';
+import { MentorKeywordsService } from './mentorKeywords.service';
 
 @Injectable()
 export class MentorsService {
-  constructor(private mentorsRepository: MentorsRepository) {}
+  constructor(
+    private readonly mentorsRepository: MentorsRepository,
+    private readonly keywordsService: KeywordsService,
+    private readonly mentorKeywordsService: MentorKeywordsService,
+  ) {}
 
   async getMentorDetails(intraId: string): Promise<MentorDto> {
     const mentor = await this.mentorsRepository.getMentorsAll(intraId);
@@ -198,5 +204,25 @@ export class MentorsService {
     ) {
       throw new BadRequestException('時間の重複が存在します。');
     }
+  }
+
+  async updateMentorKeywords(
+    intraId: string,
+    selectedKeywords: string[],
+  ): Promise<boolean> {
+    // const filteredMentorKeywords = await this.getFilteredMentorKeywords(
+    //   intraId,
+    //   selectedKeywords,
+    // );
+
+    const mentor = await this.mentorsRepository.findByIntra(intraId);
+
+    //　selectedKeywordsが空いている場合this.keywordsService.getKeywordsからDBのFind失敗例外を投げる
+    //  []を入れて追加なしに、メンターに通じているeMentorKeywordsフィルドだけ削除する
+    const keywords = selectedKeywords
+      ? await this.keywordsService.getKeywords(selectedKeywords)
+      : [];
+
+    return this.mentorKeywordsService.updateMentorToKeywords(mentor, keywords);
   }
 }
