@@ -46,7 +46,7 @@ export class CadetsRepository {
 
       return updateCadet;
     } catch (error) {
-      throw new , process.env.CONFLICTEXCEPTION_SEARCH);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 
