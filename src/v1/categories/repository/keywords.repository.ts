@@ -74,7 +74,7 @@ export class KeywordsRepository {
         },
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!keywordsEntity) {

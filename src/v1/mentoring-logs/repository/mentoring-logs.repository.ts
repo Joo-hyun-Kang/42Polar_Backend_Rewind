@@ -38,7 +38,7 @@ export class MentoringLogsRepository {
 
       return simpleLogs;
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 
@@ -61,7 +61,7 @@ export class MentoringLogsRepository {
 
       return result;
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 }
