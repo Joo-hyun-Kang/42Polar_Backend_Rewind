@@ -5,7 +5,7 @@ import { PaginationDto } from 'src/v1/dto/pagination.dto';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class commentsRepository {
+export class CommentsRepository {
   constructor(
     @InjectRepository(Comments)
     private readonly commentsRepository: Repository<Comments>,
@@ -44,5 +44,16 @@ export class commentsRepository {
     } catch (error) {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
+  }
+
+  async saveComment(comment: Comments): Promise<boolean> {
+    // クエリが１回出る
+    try {
+      await this.commentsRepository.save(comment);
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
+    }
+
+    return true;
   }
 }
