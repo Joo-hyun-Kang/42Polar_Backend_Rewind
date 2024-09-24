@@ -42,8 +42,7 @@ export class commentsRepository {
 
       return comment;
     } catch (error) {
-      //   throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
-      throw error;
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
 }
