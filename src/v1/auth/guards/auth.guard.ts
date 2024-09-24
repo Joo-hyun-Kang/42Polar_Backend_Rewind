@@ -24,12 +24,12 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
     let accessToken: string = null;
+
     if (request.headers.cookie) {
       accessToken = this.parseCookies(request.headers.cookie);
-    }
-
-    if (request.headers.authorization) {
+    } else if (request.headers.authorization) {
       accessToken = this.extractToken(request.headers.authorization);
     }
 
@@ -60,7 +60,7 @@ export class AuthGuard implements CanActivate {
 
   private extractToken(authorization: string): string | undefined {
     const [type, token] = authorization?.split(' ') ?? [];
-    return type === 'bearer' ? token : undefined;
+    return type === 'bearer' || 'Bearer' ? token : undefined;
   }
 
   private async authenticateToken(
@@ -77,6 +77,7 @@ export class AuthGuard implements CanActivate {
           secret: process.env.JWT_SECRET,
         },
       );
+
       clientRequest.request['user'] = payload;
     } catch {
       throw new UnauthorizedException(process.env.UNAUTHORIZEDEXCEPTION);
