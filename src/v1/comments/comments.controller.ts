@@ -12,7 +12,7 @@ export class CommentsController {
    * 既存コード：サービスでレポコードを分離、ORM遅延ローディンによる非同期適用
    */
   @Get(':mentorIntraId')
-  async get(
+  async getComment(
     @Param('mentorIntraId') mentorIntraId: string,
     @Query() paginationDto: PaginationDto,
   ): Promise<CommentPaginationDto> {
