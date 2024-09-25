@@ -61,4 +61,14 @@ export class CadetsService {
       throw error;
     }
   }
+
+  async saveName(intraId: string, name: string): Promise<boolean> {
+    //生徒がなければ、例外が発生する
+    const foundUser: Cadets = await this.cadetsRepository.findByIntra(intraId);
+
+    foundUser.name = name;
+    await this.cadetsRepository.updateCadet(foundUser);
+
+    return true;
+  }
 }
