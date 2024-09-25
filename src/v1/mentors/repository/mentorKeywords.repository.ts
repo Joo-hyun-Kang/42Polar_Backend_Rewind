@@ -21,7 +21,7 @@ export class MentorKeywordsRepository {
         .where('mentors = :id', { id: mentorId })
         .execute();
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_DELETE);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_DELETE);
     }
 
     return true;
@@ -47,7 +47,7 @@ export class MentorKeywordsRepository {
         .values(mentorKeywords)
         .execute();
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SAVE);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
     }
 
     return true;
@@ -63,7 +63,7 @@ export class MentorKeywordsRepository {
         where: { mentors: { intraId: mentorIntra } },
       });
     } catch (error) {
-      throw new ConflictException(error, process.env.CONFLICTEXCEPTION_SEARCH);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
 
     if (!mentorKeywords) {

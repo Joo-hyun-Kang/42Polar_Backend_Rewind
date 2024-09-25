@@ -6,6 +6,7 @@ import { MentorsModule } from './mentors/mentors.module';
 import { BocalsModule } from './bocals/bocals.module';
 import { CadetsModule } from './cadets/cadets.module';
 import { MentoringLogsModule } from './mentoring-logs/mentoring-logs.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MentoringLogsModule } from './mentoring-logs/mentoring-logs.module';
     BocalsModule,
     CadetsModule,
     MentoringLogsModule,
+    CommentsModule,
   ],
   controllers: [V1Controller],
   providers: [],
