@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,7 +18,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { User } from '../auth/decorators/user.decorator';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
-import { CreateCommentDto } from './dto/comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
 
 @Controller()
 export class CommentsController {
@@ -54,5 +56,38 @@ export class CommentsController {
       mentorIntraId,
       createCommentDto,
     );
+  }
+
+  /*
+   * メンター詳細ページにコメントを修正するAPI
+   * 既存コード：サービスでレポコードを分離
+   */
+  @Patch(':commentId')
+  @Roles([ROLES.CADET])
+  @UseGuards(AuthGuard, RoleGuard)
+  async updateComment(
+    @User() user: JwtInfo,
+    @Param('commentId') commentId: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ): Promise<boolean> {
+    return this.commentService.updateComment(
+      user.intraId,
+      commentId,
+      updateCommentDto,
+    );
+  }
+
+  /*
+   * メンター詳細ページにコメントを削除するAPI
+   * 既存コード：サービスでレポコードを分離
+   */
+  @Delete(':commentId')
+  @Roles([ROLES.CADET])
+  @UseGuards(AuthGuard, RoleGuard)
+  async deleteComment(
+    @User() user: JwtInfo,
+    @Param('commentId') commentId: string,
+  ): Promise<boolean> {
+    return this.commentService.deleteComment(user.intraId, commentId);
   }
 }

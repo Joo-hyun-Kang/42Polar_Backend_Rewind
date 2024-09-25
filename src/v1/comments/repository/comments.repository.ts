@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Comments } from 'src/domain/typeorm/entity/comments.entity';
 import { PaginationDto } from 'src/v1/dto/pagination.dto';
@@ -47,7 +51,8 @@ export class CommentsRepository {
   }
 
   async saveComment(comment: Comments): Promise<boolean> {
-    // クエリが１回出る
+    // クエリが１回出る場合：サービスのcreateCommentに呼び出された時保存１回　→ 新しく生成したこと
+    // クエリが2 回出る場合：サービズのupdateCommentに呼び出された時オブジェクト確認、保存つづ２回　→ 既存持っていたデータ
     try {
       await this.commentsRepository.save(comment);
     } catch (error) {
@@ -55,5 +60,24 @@ export class CommentsRepository {
     }
 
     return true;
+  }
+
+  async findCommentById(commentId: string): Promise<Comments> {
+    let comment: Comments;
+    try {
+      comment = await this.commentsRepository.findOne({
+        where: { id: commentId },
+        relations: { cadets: true },
+        select: { cadets: { intraId: true } },
+      });
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!comment) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return comment;
   }
 }
