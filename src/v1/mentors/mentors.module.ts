@@ -10,6 +10,7 @@ import { MentorKeywords } from 'src/domain/typeorm/entity/mentorKeywords.entity'
 import { MentorKeywordsService } from './mentorKeywords.service';
 import { MentorKeywordsRepository } from './repository/mentorKeywords.repository';
 import { CategoriesModule } from '../categories/categories.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CategoriesModule } from '../categories/categories.module';
     }),
     MentoringLogsModule,
     CategoriesModule,
+    EmailModule,
   ],
   controllers: [MentorsController],
   providers: [

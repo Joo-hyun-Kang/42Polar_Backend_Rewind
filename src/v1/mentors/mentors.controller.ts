@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -22,12 +23,15 @@ import { SimpleMentoringInfoDto } from './dto/log-pagination.dto';
 import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
 import { MentoringInfoDto } from './dto/mentoring-info.dto';
 import { JoinMentorDto } from './dto/join-mentor-dto';
+import { RequestEmailDto } from './dto/email.dto';
+import { EmailService } from '../email/email.service';
 
 @Controller()
 export class MentorsController {
   constructor(
     private mentorService: MentorsService,
     private mentoringLogsService: MentoringLogsService,
+    private emailService: EmailService,
   ) {}
 
   /*
@@ -45,6 +49,20 @@ export class MentorsController {
       user.intraId,
       pagination,
     );
+  }
+
+  /*
+   *  会員登録ーMentorページにメール認証のため、コード生成とメールを送るAPI
+   *  既存コード：RedisロジックをRedisモージュルに集めました
+   */
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  @Post('email')
+  invalidateMentorEmail(
+    @User() user: JwtInfo,
+    @Body() req: RequestEmailDto,
+  ): Promise<boolean> {
+    return this.emailService.sendValidationCode(user.intraId, req.email);
   }
 
   /*
