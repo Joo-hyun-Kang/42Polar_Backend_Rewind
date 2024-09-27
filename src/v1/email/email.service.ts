@@ -19,7 +19,9 @@ export class EmailService {
      */
     const code: string = Math.random().toString(36).substring(2, 10);
 
+    //タイムアウトは3分設定
     const EMAIL_TIME_LIMIT = 180;
+
     try {
       /*
        * 同じ Intra IDのリクエスト削除 on Redis 後, 改めて Set
@@ -61,4 +63,6 @@ export class EmailService {
     });
     return true;
   }
+
+ 
 }
