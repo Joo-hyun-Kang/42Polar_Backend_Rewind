@@ -248,6 +248,22 @@ export class MentorsService {
     return this.emailService.sendValidationCode(intraId, emailAddress);
   }
 
+  async verifyMentorEmail(intraId: string, code: string): Promise<boolean> {
+    const emailAddress = await this.emailService.verifyMentorEmail(
+      intraId,
+      code,
+    );
+
+    if (emailAddress) {
+      const mentor = await this.mentorsRepository.findByIntra(intraId);
+      mentor.email = emailAddress;
+
+      return await this.mentorsRepository.save(mentor);
+    }
+
+    return false;
+  }
+
   async getMentoringsLists(
     intraId: string,
     pagination: PaginationDto,

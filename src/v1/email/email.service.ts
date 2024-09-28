@@ -64,5 +64,25 @@ export class EmailService {
     return true;
   }
 
- 
+  async verifyMentorEmail(intraId: string, code: string): Promise<string> {
+    const email = await this.cacheService.get(code);
+
+    if (!email) {
+      throw new ConflictException('無効なリクエストです');
+    }
+
+    try {
+      /*
+       * リクエストの削除 on Redis
+       */
+      await Promise.all([
+        this.cacheService.del(intraId),
+        this.cacheService.del(code),
+      ]);
+    } catch {
+      throw new ConflictException(`メールリクエスト中にエラーが発生しました`);
+    }
+
+    return email;
+  }
 }

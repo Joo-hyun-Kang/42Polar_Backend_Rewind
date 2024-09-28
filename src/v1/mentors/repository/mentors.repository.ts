@@ -92,13 +92,4 @@ export class MentorsRepository {
 
     return mentors;
   }
-
-  async updateMentor(mentor: Mentors): Promise<boolean> {
-    try {
-      await this.mentorsRepository.save(mentor);
-      return true;
-    } catch (err) {
-      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
-    }
-  }
 }

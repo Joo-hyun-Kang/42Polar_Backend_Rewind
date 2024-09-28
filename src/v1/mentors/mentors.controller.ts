@@ -54,7 +54,7 @@ export class MentorsController {
     @Param('intraId') mentorIntraId: string,
     @Query() paginationDto: PaginationDto,
   ): Promise<SimpleMentoringInfoDto> {
-    console.log(1);
+
     const result = await this.mentorService.getSimpleLogsPagination(
       mentorIntraId,
       paginationDto,
@@ -77,6 +77,20 @@ export class MentorsController {
   }
 
   /*
+   *  会員登録ーMentorページにメール認証のため、コードの検証してメールを登録API
+   *  既存コード：RedisロジックをRedisモージュルに集めました
+   */
+  @Post('email/verifications/:code')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async updateEmail(
+    @User() user: JwtInfo,
+    @Param('code') code: string,
+  ): Promise<boolean> {
+    return await this.mentorService.verifyMentorEmail(user.intraId, code);
+  }
+
+  /*
    * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
    * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
    */
@@ -87,8 +101,7 @@ export class MentorsController {
     @Body() body: JoinMentorDto,
     @User() user: JwtInfo,
   ): Promise<boolean> {
-    await this.mentorService.updateMentorDetails(user.intraId, body);
-    return true;
+    return await this.mentorService.updateMentorDetails(user.intraId, body);
   }
 
   /*
