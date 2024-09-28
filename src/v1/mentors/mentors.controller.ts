@@ -20,19 +20,13 @@ import { User } from '../auth/decorators/user.decorator';
 import { UpdateMentorDatailDto } from './dto/mentor-detail.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SimpleMentoringInfoDto } from './dto/log-pagination.dto';
-import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
 import { MentoringInfoDto } from './dto/mentoring-info.dto';
 import { JoinMentorDto } from './dto/join-mentor-dto';
 import { RequestEmailDto } from './dto/email.dto';
-import { EmailService } from '../email/email.service';
 
 @Controller()
 export class MentorsController {
-  constructor(
-    private mentorService: MentorsService,
-    private mentoringLogsService: MentoringLogsService,
-    private emailService: EmailService,
-  ) {}
+  constructor(private mentorService: MentorsService) {}
 
   /*
    * 私のメンタリングーMentorページにメンターのメンタリングログを見せるAPI
@@ -45,10 +39,27 @@ export class MentorsController {
     @User() user: JwtInfo,
     @Query() pagination: PaginationDto,
   ): Promise<MentoringInfoDto> {
-    return await this.mentoringLogsService.getMentoringsLists(
+    return await this.mentorService.getMentoringsLists(
       user.intraId,
       pagination,
     );
+  }
+
+  /*
+   * フロントのメンター詳細ページでメンターに行われたメンタリングリストに使用
+   * 既存コード：サービスでレポコードを分離
+   */
+  @Get('simplelogs/:intraId')
+  async getSimpleLogs(
+    @Param('intraId') mentorIntraId: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<SimpleMentoringInfoDto> {
+    console.log(1);
+    const result = await this.mentorService.getSimpleLogsPagination(
+      mentorIntraId,
+      paginationDto,
+    );
+    return { logs: result[0], total: result[1] };
   }
 
   /*
@@ -62,7 +73,22 @@ export class MentorsController {
     @User() user: JwtInfo,
     @Body() req: RequestEmailDto,
   ): Promise<boolean> {
-    return this.emailService.sendValidationCode(user.intraId, req.email);
+    return this.mentorService.sendValidationCode(user.intraId, req.email);
+  }
+
+  /*
+   * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
+   * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
+   */
+  @Patch('join')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async join(
+    @Body() body: JoinMentorDto,
+    @User() user: JwtInfo,
+  ): Promise<boolean> {
+    await this.mentorService.updateMentorDetails(user.intraId, body);
+    return true;
   }
 
   /*
@@ -111,21 +137,6 @@ export class MentorsController {
   }
 
   /*
-   * フロントの会員登録ーメンターにサービズの利用前、必須情報登録するAPI
-   * updateMentorDetailsとサービス、レポ同じ、DTOが必須なのでAPI分離
-   */
-  @Patch('join')
-  @Roles([ROLES.MENTOR])
-  @UseGuards(AuthGuard, RoleGuard)
-  async join(
-    @Body() body: JoinMentorDto,
-    @User() user: JwtInfo,
-  ): Promise<boolean> {
-    await this.mentorService.updateMentorDetails(user.intraId, body);
-    return true;
-  }
-
-  /*
    * フロントのメンター詳細ページでメンター情報をアップデートするAPI
    * Email、キーワードは別のコントローラーによって登録される→メール認証のため
    * 既存コード：サービスでレポコードを分離
@@ -143,21 +154,5 @@ export class MentorsController {
     }
 
     return await this.mentorService.updateMentorDetails(user.intraId, body);
-  }
-
-  /*
-   * フロントのメンター詳細ページでメンターに行われたメンタリングリストに使用
-   * 既存コード：サービスでレポコードを分離
-   */
-  @Get('simplelogs/:intraId')
-  async getSimpleLogs(
-    @Param('intraId') mentorIntraId: string,
-    @Query() paginationDto: PaginationDto,
-  ): Promise<SimpleMentoringInfoDto> {
-    const result = await this.mentoringLogsService.getSimpleLogsPagination(
-      mentorIntraId,
-      paginationDto,
-    );
-    return { logs: result[0], total: result[1] };
   }
 }

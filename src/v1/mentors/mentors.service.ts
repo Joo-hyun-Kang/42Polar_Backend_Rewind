@@ -9,6 +9,11 @@ import { ROLES } from '../auth/enum/roles.enum';
 import { UpdateMentorDatailDto } from './dto/mentor-detail.dto';
 import { KeywordsService } from '../categories/keywords.service';
 import { MentorKeywordsService } from './mentorKeywords.service';
+import { EmailService } from '../email/email.service';
+import { PaginationDto } from '../dto/pagination.dto';
+import { MentoringInfoDto } from './dto/mentoring-info.dto';
+import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
+import { SimpleLogDto } from './dto/simple-log.dto';
 
 @Injectable()
 export class MentorsService {
@@ -16,6 +21,8 @@ export class MentorsService {
     private readonly mentorsRepository: MentorsRepository,
     private readonly keywordsService: KeywordsService,
     private readonly mentorKeywordsService: MentorKeywordsService,
+    private mentoringLogsService: MentoringLogsService,
+    private emailService: EmailService,
   ) {}
 
   async getMentorDetails(intraId: string): Promise<MentorDto> {
@@ -232,5 +239,32 @@ export class MentorsService {
     return keywords.map((e) => {
       return e.name;
     });
+  }
+
+  async sendValidationCode(
+    intraId: string,
+    emailAddress: string,
+  ): Promise<boolean> {
+    return this.emailService.sendValidationCode(intraId, emailAddress);
+  }
+
+  async getMentoringsLists(
+    intraId: string,
+    pagination: PaginationDto,
+  ): Promise<MentoringInfoDto> {
+    return await this.mentoringLogsService.getMentoringsLists(
+      intraId,
+      pagination,
+    );
+  }
+
+  async getSimpleLogsPagination(
+    mentorIntraId: string,
+    paginationDto: PaginationDto,
+  ): Promise<[SimpleLogDto[], number]> {
+    return await this.mentoringLogsService.getSimpleLogsPagination(
+      mentorIntraId,
+      paginationDto,
+    );
   }
 }
