@@ -9,6 +9,8 @@ import { RouterModule } from '@nestjs/core';
 import { V1Module } from './v1/v1.module';
 import { MentorsModule } from './v1/mentors/mentors.module';
 import { CommentsModule } from './v1/comments/comments.module';
+import { Cadets } from './domain/typeorm/entity/cadets.entity';
+import { CadetsModule } from './v1/cadets/cadets.module';
 
 @Module({
   imports: [
@@ -29,6 +31,10 @@ import { CommentsModule } from './v1/comments/comments.module';
           {
             path: 'comments',
             module: CommentsModule,
+          },
+          {
+            path: 'cadets',
+            module: CadetsModule,
           },
         ],
       },

@@ -7,6 +7,8 @@ import { BocalsModule } from './bocals/bocals.module';
 import { CadetsModule } from './cadets/cadets.module';
 import { MentoringLogsModule } from './mentoring-logs/mentoring-logs.module';
 import { CommentsModule } from './comments/comments.module';
+import { RedisModule } from './redis/redis.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { CommentsModule } from './comments/comments.module';
     CadetsModule,
     MentoringLogsModule,
     CommentsModule,
+    RedisModule,
+    EmailModule,
   ],
   controllers: [V1Controller],
   providers: [],
