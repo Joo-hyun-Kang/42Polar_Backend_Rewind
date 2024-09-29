@@ -17,6 +17,6 @@ export class MentoringLogsSeeder implements Seeder {
     const cadetsMeta = await cadetRepository.find();
     const mentorsMeta = await mentorRepository.find();
     await mentoringLogsFactory.setMeta({ cadetsMeta, mentorsMeta });
-    await mentoringLogsFactory.saveMany(100);
+    await mentoringLogsFactory.saveMany(300);
   }
 }
