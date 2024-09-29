@@ -4,7 +4,10 @@ import { SimpleLogDto } from '../mentors/dto/simple-log.dto';
 import { MentoringLogsRepository } from './repository/mentoring-logs.repository';
 import { MentoringInfoDto } from '../mentors/dto/mentoring-info.dto';
 import { MentoringLogsDto } from '../mentors/dto/mentoring-logs.dto';
-import { MentoringLogs } from 'src/domain/typeorm/entity/mentoring-logs.entity';
+import {
+  LOG_STATUS,
+  MentoringLogs,
+} from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
 import { Reports } from 'src/domain/typeorm/entity/reports.entity';
 
@@ -44,6 +47,16 @@ export class MentoringLogsService {
     );
 
     return { logs, total: result[MENTORING_COUNT_INDEX] };
+  }
+
+  async getMentoringListByStatus(
+    mentorIntraId: string,
+    mentoringStatus: LOG_STATUS[],
+  ): Promise<MentoringLogs[]> {
+    return await this.mentoringLogsRepository.getMentoringListByStatus(
+      mentorIntraId,
+      mentoringStatus,
+    );
   }
 
   formatMentoringLog(

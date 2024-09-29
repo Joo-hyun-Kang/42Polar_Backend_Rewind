@@ -9,6 +9,7 @@ import { MentoringLogsModule } from './mentoring-logs/mentoring-logs.module';
 import { CommentsModule } from './comments/comments.module';
 import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
+import { CalendarModule } from './calendar/calendar.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EmailModule } from './email/email.module';
     CommentsModule,
     RedisModule,
     EmailModule,
+    CalendarModule,
   ],
   controllers: [V1Controller],
   providers: [],

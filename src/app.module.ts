@@ -11,6 +11,7 @@ import { MentorsModule } from './v1/mentors/mentors.module';
 import { CommentsModule } from './v1/comments/comments.module';
 import { Cadets } from './domain/typeorm/entity/cadets.entity';
 import { CadetsModule } from './v1/cadets/cadets.module';
+import { CalendarModule } from './v1/calendar/calendar.module';
 
 @Module({
   imports: [
@@ -35,6 +36,10 @@ import { CadetsModule } from './v1/cadets/cadets.module';
           {
             path: 'cadets',
             module: CadetsModule,
+          },
+          {
+            path: 'calendar',
+            module: CalendarModule,
           },
         ],
       },
