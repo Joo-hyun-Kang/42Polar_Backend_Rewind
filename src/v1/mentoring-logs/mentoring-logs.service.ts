@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SimpleLogDto } from '../mentors/dto/simple-log.dto';
 import { MentoringLogsRepository } from './repository/mentoring-logs.repository';
@@ -10,10 +15,21 @@ import {
 } from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { Cadets } from 'src/domain/typeorm/entity/cadets.entity';
 import { Reports } from 'src/domain/typeorm/entity/reports.entity';
+import { ApplyService } from './apply.service';
+import { MentorsService } from '../mentors/mentors.service';
+import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
+import { CadetsService } from '../cadets/cadets.service';
+import { CreateApplyDto } from './dto/create-apply.dto';
 
 @Injectable()
 export class MentoringLogsService {
-  constructor(private mentoringLogsRepository: MentoringLogsRepository) {}
+  constructor(
+    private readonly mentoringLogsRepository: MentoringLogsRepository,
+    private readonly applyService: ApplyService,
+    @Inject(forwardRef(() => MentorsService))
+    private readonly mentorsService: MentorsService,
+    private readonly cadetsService: CadetsService,
+  ) {}
 
   async getSimpleLogsPagination(
     mentorIntraId: string,
@@ -59,6 +75,44 @@ export class MentoringLogsService {
     );
   }
 
+  async createMentorigLog(
+    mentorId: string,
+    cadetId: string,
+    createApplyDto: CreateApplyDto,
+  ): Promise<boolean> {
+    //Date型で切り替えていない場合、変更する, 例外が発生する
+    this.validateDateFormate(createApplyDto);
+
+    //過去にメンタリング申し込みの防止、例外が発生する
+    this.applyService.validateRequestTime(createApplyDto);
+
+    //メンターリングの正しいか、既に決まっているメンタリングの検証、例外が発生する
+    await this.applyService.checkRequestTime(mentorId, createApplyDto);
+
+    //当てはまるメンターがなければ例外
+    const mentor: Mentors = await this.mentorsService.findByIntra(mentorId);
+    if (!mentor.isActive) {
+      throw new BadRequestException(
+        'このメンターはメンターリング申し込みができません。',
+      );
+    }
+
+    //当てはまる生徒がなければ例外
+    const cadet: Cadets = await this.cadetsService.findCadetByIntraId(cadetId);
+
+    const mentoringLogs = new MentoringLogs();
+    mentoringLogs.cadets = Promise.resolve(cadet);
+    mentoringLogs.mentors = Promise.resolve(mentor);
+    mentoringLogs.topic = createApplyDto.topic;
+    mentoringLogs.content = createApplyDto.content;
+    mentoringLogs.requestTime1 = createApplyDto.requestTime1;
+    mentoringLogs.requestTime2 = createApplyDto.requestTime2;
+    mentoringLogs.requestTime3 = createApplyDto.requestTime3;
+    mentoringLogs.status = LOG_STATUS.WATING;
+
+    return await this.mentoringLogsRepository.save(mentoringLogs);
+  }
+
   formatMentoringLog(
     log: MentoringLogs,
     cadet: Cadets,
@@ -86,5 +140,51 @@ export class MentoringLogsService {
         content: log.content,
       },
     };
+  }
+
+  validateDateFormate(createApplyDto: CreateApplyDto) {
+    try {
+      if (!(createApplyDto.requestTime1 instanceof Date)) {
+        createApplyDto.requestTime1 = [
+          this.toDate(createApplyDto.requestTime1[0]),
+          this.toDate(createApplyDto.requestTime1[1]),
+        ];
+        if (
+          createApplyDto.requestTime2 &&
+          !(createApplyDto.requestTime2 instanceof Date)
+        ) {
+          createApplyDto.requestTime2 = [
+            this.toDate(createApplyDto.requestTime2[0]),
+            this.toDate(createApplyDto.requestTime2[1]),
+          ];
+          if (
+            createApplyDto.requestTime3 &&
+            !(createApplyDto.requestTime3 instanceof Date)
+          ) {
+            createApplyDto.requestTime3 = [
+              this.toDate(createApplyDto.requestTime3[0]),
+              this.toDate(createApplyDto.requestTime3[1]),
+            ];
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      throw new BadRequestException('候補時刻が正しいDate型がありません。');
+    }
+  }
+
+  toDate(value: any): Date {
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return value;
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+      throw new BadRequestException('候補時刻が正しいDate型がありません。');
+    }
+
+    return date;
   }
 }

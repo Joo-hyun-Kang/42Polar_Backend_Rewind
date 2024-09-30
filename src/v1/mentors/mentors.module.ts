@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MentorsService } from './mentors.service';
 import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,7 +24,7 @@ import { EmailModule } from '../email/email.module';
         };
       },
     }),
-    MentoringLogsModule,
+    forwardRef(() => MentoringLogsModule),
     CategoriesModule,
     EmailModule,
   ],

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MentorsService } from '../mentors/mentors.service';
 import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
@@ -10,7 +15,9 @@ import {
 @Injectable()
 export class CalendarService {
   constructor(
+    @Inject(forwardRef(() => MentorsService))
     private readonly mentorsService: MentorsService,
+    @Inject(forwardRef(() => MentoringLogsService))
     private readonly mentoringLogsService: MentoringLogsService,
   ) {}
 
@@ -53,7 +60,7 @@ export class CalendarService {
   }
 
   async filterDate(requestTimes: Date[][], date: string): Promise<Date[][]> {
-    //dateパラメータの形:mentorIntraId?date="24-08"
+    //dateパラメータの形:mentorIntraId?date="2024-08"
     if (!date) {
       return requestTimes;
     }

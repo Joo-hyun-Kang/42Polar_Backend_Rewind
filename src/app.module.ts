@@ -9,9 +9,9 @@ import { RouterModule } from '@nestjs/core';
 import { V1Module } from './v1/v1.module';
 import { MentorsModule } from './v1/mentors/mentors.module';
 import { CommentsModule } from './v1/comments/comments.module';
-import { Cadets } from './domain/typeorm/entity/cadets.entity';
 import { CadetsModule } from './v1/cadets/cadets.module';
 import { CalendarModule } from './v1/calendar/calendar.module';
+import { MentoringLogsModule } from './v1/mentoring-logs/mentoring-logs.module';
 
 @Module({
   imports: [
@@ -40,6 +40,10 @@ import { CalendarModule } from './v1/calendar/calendar.module';
           {
             path: 'calendar',
             module: CalendarModule,
+          },
+          {
+            path: 'mentoring-logs',
+            module: MentoringLogsModule,
           },
         ],
       },

@@ -81,4 +81,14 @@ export class MentoringLogsRepository {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
+
+  async save(mentoringLogs: MentoringLogs): Promise<boolean> {
+    try {
+      await this.mentoringLogsRepository.save(mentoringLogs);
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
+    }
+
+    return true;
+  }
 }

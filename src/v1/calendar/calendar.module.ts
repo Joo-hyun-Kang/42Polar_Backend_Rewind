@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CalendarController } from './calendar.controller';
 import { CalendarService } from './calendar.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -16,10 +16,11 @@ import { MentorsModule } from '../mentors/mentors.module';
         };
       },
     }),
-    MentoringLogsModule,
-    MentorsModule,
+    forwardRef(() => MentoringLogsModule),
+    forwardRef(() => MentorsModule),
   ],
   controllers: [CalendarController],
   providers: [CalendarService],
+  exports: [CalendarService],
 })
 export class CalendarModule {}
