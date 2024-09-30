@@ -62,8 +62,8 @@ export const entityTsOption: EntityOption = {
 
 export const seedingOption: SeederOptions = {
   factories: [
-    // CategoriesFactory,
-    // KeywordsFactories,
+    CategoriesFactory,
+    KeywordsFactories,
     CommentsFactories,
     CadetsFactory,
     CommentsFactories,
@@ -71,9 +71,9 @@ export const seedingOption: SeederOptions = {
     ReportsFactory,
   ],
   seeds: [
-    // CategoriesSeeder,
-    // KeywordsSeeder,
-    // KeywordCategoriesSeeder,
+    CategoriesSeeder,
+    KeywordsSeeder,
+    KeywordCategoriesSeeder,
     MentorsSeeder,
     MentorKeywordsSeeder,
     CadetsSeeder,
