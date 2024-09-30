@@ -15,7 +15,8 @@ export class Cadets {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 15 })
+  //大半のロジックがIntraIdでDBに接続しているので、重複の際は予想的ない動作をする
+  @Column({ type: 'varchar', length: 15, unique: true })
   intraId: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
