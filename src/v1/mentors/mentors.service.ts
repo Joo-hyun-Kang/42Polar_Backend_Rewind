@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { MentorsRepository } from './repository/mentors.repository';
 import { MentorDto } from './dto/mentor.dto';
 import { NotFoundException } from '@nestjs/common';
@@ -21,6 +26,7 @@ export class MentorsService {
     private readonly mentorsRepository: MentorsRepository,
     private readonly keywordsService: KeywordsService,
     private readonly mentorKeywordsService: MentorKeywordsService,
+    @Inject(forwardRef(() => MentoringLogsService))
     private mentoringLogsService: MentoringLogsService,
     private emailService: EmailService,
   ) {}

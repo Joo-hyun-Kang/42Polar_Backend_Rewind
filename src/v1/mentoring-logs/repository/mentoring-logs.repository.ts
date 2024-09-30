@@ -6,7 +6,7 @@ import {
 } from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { PaginationDto } from 'src/v1/dto/pagination.dto';
 import { SimpleLogDto } from 'src/v1/mentors/dto/simple-log.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class MentoringLogsRepository {
@@ -63,5 +63,32 @@ export class MentoringLogsRepository {
     } catch (error) {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
+  }
+
+  async getMentoringListByStatus(
+    mentorIntraId: string,
+    mentoringStatus: LOG_STATUS[],
+  ) {
+    try {
+      const found: MentoringLogs[] = await this.mentoringLogsRepository.find({
+        where: {
+          mentors: { intraId: mentorIntraId },
+          status: In(mentoringStatus),
+        },
+      });
+      return found;
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async save(mentoringLogs: MentoringLogs): Promise<boolean> {
+    try {
+      await this.mentoringLogsRepository.save(mentoringLogs);
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
+    }
+
+    return true;
   }
 }
