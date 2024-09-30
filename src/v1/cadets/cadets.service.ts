@@ -4,6 +4,10 @@ import { CreateCadetDto } from './dto/create-cadet.dto';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { ROLES } from '../auth/enum/roles.enum';
 import { CadetsRepository } from './repository/cadets.repository';
+import { CadetMentoringLogs } from './dto/cadet-mentoring-logs.interface';
+import { MentoringLogs } from 'src/domain/typeorm/entity/mentoring-logs.entity';
+import { CadetApplyInfoDto } from './dto/cadet-apply-info.dto';
+import { UpdateCadetDto } from './dto/update-cadet.dto';
 
 @Injectable()
 export class CadetsService {
@@ -70,5 +74,66 @@ export class CadetsService {
     await this.cadetsRepository.updateCadet(foundUser);
 
     return true;
+  }
+
+  async getMentoringLogs(intraId: string): Promise<CadetApplyInfoDto> {
+    const cadetWithMetoringLogs =
+      await this.cadetsRepository.getCadetWithMentoringLogsAndMentorAndReport(
+        intraId,
+      );
+
+    //プロントの生徒のメンとリングページにメンタリングカードのモーダルデータにParsing
+    const mentorings: CadetMentoringLogs[] = await this.formatMentorings(
+      await cadetWithMetoringLogs.mentoringLogs,
+      cadetWithMetoringLogs.isCommon,
+    );
+
+    return {
+      username: cadetWithMetoringLogs.name,
+      resumeUrl: cadetWithMetoringLogs.resumeUrl,
+      mentorings: mentorings,
+    };
+  }
+
+  async formatMentorings(
+    logs: MentoringLogs[],
+    isCommon: boolean,
+  ): Promise<CadetMentoringLogs[]> {
+    return Promise.all(
+      logs.map(async (mentoring) => {
+        return {
+          id: mentoring.id,
+          mentor: {
+            intraId: (await mentoring.mentors)?.intraId,
+            name: (await mentoring.mentors)?.name,
+          },
+          createdAt: mentoring.createdAt,
+          status: mentoring.status,
+          topic: mentoring.topic,
+          meta: {
+            isCommon,
+            content: mentoring.content,
+            requestTime: [
+              mentoring.requestTime1,
+              mentoring.requestTime2,
+              mentoring.requestTime3,
+            ],
+            meetingAt: mentoring.meetingAt,
+            rejectMessage: mentoring.rejectMessage,
+            feedbackMessage: (await mentoring.reports)?.feedbackMessage,
+          },
+        };
+      }),
+    );
+  }
+
+  async updateCadet(
+    cadetIntraId: string,
+    updateCadetDto: UpdateCadetDto,
+  ): Promise<void> {
+    const cadet: Cadets = await this.findCadetByIntraId(cadetIntraId);
+    cadet.resumeUrl = updateCadetDto.resumeUrl;
+
+    await this.cadetsRepository.updateCadet(cadet);
   }
 }
