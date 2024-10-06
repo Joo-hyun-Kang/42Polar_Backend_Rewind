@@ -3,6 +3,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SimpleLogDto } from '../mentors/dto/simple-log.dto';
@@ -20,6 +21,8 @@ import { MentorsService } from '../mentors/mentors.service';
 import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { CadetsService } from '../cadets/cadets.service';
 import { CreateApplyDto } from './dto/create-apply.dto';
+import { UpdateMentoringLogInfo } from './interface/change-status.interface';
+import { getJSTDate } from '../util/utils';
 
 @Injectable()
 export class MentoringLogsService {
@@ -113,6 +116,61 @@ export class MentoringLogsService {
     return await this.mentoringLogsRepository.save(mentoringLogs);
   }
 
+  async updateMentoringLogStatus(
+    infos: UpdateMentoringLogInfo,
+  ): Promise<boolean> {
+    //なければ,NotFoundExceptionが発生する
+    const logs: MentoringLogs =
+      await this.mentoringLogsRepository.findMentoringLogsById(
+        infos.mentoringLogId,
+      );
+
+    //更新するユーザーの権限があるか検証
+    await this.validateUser(infos.MentorOrCadetId, infos.status, logs);
+
+    //アップデートするステータスについて検証
+    this.validateStatus(logs.status, infos.status);
+
+    logs.status = infos.status;
+    if (infos.status === LOG_STATUS.CANCEL) {
+      logs.rejectMessage = infos.rejectMessage;
+      logs.meetingAt = [];
+    } else if (infos.status === LOG_STATUS.CONFIRMED) {
+      const requestedTime = this.getRequestTimeOrNull(
+        logs,
+        infos.meetingAtIndex,
+      );
+
+      if (!requestedTime) {
+        throw new BadRequestException(process.env.BADREQUESTEXCEPTION);
+      }
+
+      this.applyService.checkDate(
+        getJSTDate(requestedTime[0]),
+        getJSTDate(requestedTime[1]),
+      );
+
+      //現在より過去の時間検証
+      this.applyService.isMentoringOver([
+        getJSTDate(requestedTime[0]),
+        getJSTDate(requestedTime[1]),
+      ]);
+
+      logs.meetingAt = requestedTime;
+      logs.meetingStart = requestedTime[0];
+    } else if (infos.status === LOG_STATUS.DONE) {
+      if (!this.isValidTimeForMakeDone(logs)) {
+        throw new BadRequestException(
+          'メンタリング開始時間から30分後にメンタリングを完了することができます。',
+        );
+      }
+    } else {
+      throw new BadRequestException(process.env.BADREQUESTEXCEPTION);
+    }
+
+    return await this.mentoringLogsRepository.save(logs);
+  }
+
   formatMentoringLog(
     log: MentoringLogs,
     cadet: Cadets,
@@ -186,5 +244,91 @@ export class MentoringLogsService {
     }
 
     return date;
+  }
+
+  async validateUser(
+    mentorOrCadetId: string,
+    updateStatus: LOG_STATUS,
+    foundLog: MentoringLogs,
+  ): Promise<boolean> {
+    const mentor = await foundLog.mentors;
+    const cadet = await foundLog.cadets;
+
+    if (!mentor || !cadet) {
+      throw new BadRequestException('正しくないメンタリング型です。');
+    }
+    if (updateStatus === LOG_STATUS.CANCEL) {
+      if (
+        mentorOrCadetId !== mentor.intraId &&
+        mentorOrCadetId !== cadet.intraId
+      ) {
+        throw new UnauthorizedException(process.env.UNAUTHORIZEDEXCEPTION);
+      }
+    } else {
+      if (mentorOrCadetId !== mentor.intraId) {
+        {
+          throw new UnauthorizedException(process.env.UNAUTHORIZEDEXCEPTION);
+        }
+      }
+    }
+
+    return true;
+  }
+
+  validateStatus(currentStatus: string, updateStatus: LOG_STATUS): void {
+    switch (updateStatus) {
+      case LOG_STATUS.CONFIRMED:
+        if (currentStatus !== LOG_STATUS.WATING) {
+          throw new BadRequestException(
+            'お待ち中のメンタリングだけ、変更ができます。',
+          );
+        }
+        break;
+      case LOG_STATUS.CANCEL:
+        if (
+          currentStatus !== LOG_STATUS.WATING &&
+          currentStatus !== LOG_STATUS.CONFIRMED
+        ) {
+          throw new BadRequestException(
+            'お待ち中と確定のメンタリングだけ取り消すことができます。',
+          );
+        }
+        break;
+      case LOG_STATUS.DONE:
+        if (currentStatus !== LOG_STATUS.CONFIRMED) {
+          throw new BadRequestException(
+            '確定されているメンタリングだけを更新できます。',
+          );
+        }
+        break;
+      case LOG_STATUS.WATING:
+        throw new BadRequestException(
+          'メンタリングの状態をお待ち中に変更することはできません。',
+        );
+    }
+  }
+
+  getRequestTimeOrNull(logs: MentoringLogs, index: number): Date[] {
+    switch (index) {
+      case 0:
+        return logs.requestTime1;
+      case 1:
+        return logs.requestTime2;
+      case 2:
+        return logs.requestTime3;
+      default:
+        return null;
+    }
+  }
+
+  isValidTimeForMakeDone(log: MentoringLogs): boolean {
+    const startMeetingAtIndex = 0;
+    const DONE_LIMIT_MIN = 30;
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - DONE_LIMIT_MIN);
+    if (log.meetingAt[startMeetingAtIndex].getTime() > now.getTime()) {
+      return false;
+    }
+    return true;
   }
 }

@@ -15,6 +15,10 @@ import { RoleGuard } from '../auth/guards/role.guard';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { User } from '../auth/decorators/user.decorator';
 import { CreateApplyDto } from './dto/create-apply.dto';
+import { ApproveMentoringDto } from './dto/approve-mentoring.dto';
+import { LOG_STATUS } from 'src/domain/typeorm/entity/mentoring-logs.entity';
+import { RejectMentoringDto } from './dto/reject-mentoring.dto';
+import { CompleteMentoringDto } from './dto/complete-mentoring.dto';
 
 @Controller()
 export class MentoringLogsController {
@@ -40,5 +44,75 @@ export class MentoringLogsController {
       user.intraId,
       createApplyDto,
     );
+  }
+
+  /*
+   * メンタリングの状態を確定で変更するAPI
+   * 私のメンタリングーMentorページで使用
+   * 既存コード改善
+   * -過去時間い申し込み防ぐロジック追加
+   * -APIをエンドポイントの変更、サービスでレポコードを分離
+   */
+  @Post('approve')
+  @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
+  async approveMentoring(
+    @User() user: JwtInfo,
+    @Body() body: ApproveMentoringDto,
+  ) {
+    const result = await this.mentoringLogsService.updateMentoringLogStatus({
+      MentorOrCadetId: user.intraId,
+      mentoringLogId: body.mentoringLogId,
+      status: LOG_STATUS.CONFIRMED,
+      meetingAtIndex: body.meetingAtIndex,
+    });
+
+    // 実装すること
+    // this.emailService.sendMessage(log.id, MailType.Approve);
+    return result;
+  }
+
+  /*
+   * メンタリングの状態を確定で削除するAPI
+   * 私のメンタリングーMentor、cadet(生徒）ページで使用
+   * 既存コード改善
+   * -APIをエンドポイントの変更、サービスでレポコードを分離
+   */
+  @Post('reject')
+  @Roles([ROLES.MENTOR, ROLES.CADET])
+  @UseGuards(AuthGuard, RoleGuard)
+  async rejectMentoring(
+    @User() user: JwtInfo,
+    @Body() body: RejectMentoringDto,
+  ) {
+    const result = await this.mentoringLogsService.updateMentoringLogStatus({
+      MentorOrCadetId: user.intraId,
+      mentoringLogId: body.mentoringLogId,
+      status: LOG_STATUS.CANCEL,
+      rejectMessage: body.rejectMessage,
+    });
+
+    // 実装すること
+    // this.emailService.sendMessage(log.id, MailType.Cancel);
+    return result;
+  }
+
+  /*
+   * メンタリングの状態を確定で完了するAPI
+   * 私のメンタリングーMentorページで使用
+   * 既存コード改善
+   * -APIをエンドポイントの変更、サービスでレポコードを分離
+   */
+  @Patch('done')
+  @Roles([ROLES.MENTOR])
+  async CompleteMentoring(
+    @User() user: JwtInfo,
+    @Body() body: CompleteMentoringDto,
+  ) {
+    return await this.mentoringLogsService.updateMentoringLogStatus({
+      MentorOrCadetId: user.intraId,
+      mentoringLogId: body.mentoringLogId,
+      status: LOG_STATUS.DONE,
+    });
   }
 }

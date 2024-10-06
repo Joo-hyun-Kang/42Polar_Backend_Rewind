@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   LOG_STATUS,
@@ -90,5 +94,28 @@ export class MentoringLogsRepository {
     }
 
     return true;
+  }
+
+  async findMentoringLogsById(uuid: string): Promise<MentoringLogs> {
+    let mentoringLog;
+    try {
+      mentoringLog = await this.mentoringLogsRepository.findOne({
+        where: {
+          id: uuid,
+        },
+        relations: {
+          mentors: true,
+          cadets: true,
+        },
+      });
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!mentoringLog) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return mentoringLog;
   }
 }

@@ -185,26 +185,26 @@ export class ApplyService {
   }
 
   validateRequestTime(data: CreateApplyDto): void {
-    const END_TIME = 1;
-
     if (
-      isMentoringOver(data.requestTime1) ||
-      isMentoringOver(data.requestTime2) ||
-      isMentoringOver(data.requestTime3)
+      this.isMentoringOver(data.requestTime1) ||
+      this.isMentoringOver(data.requestTime2) ||
+      this.isMentoringOver(data.requestTime3)
     ) {
       throw new BadRequestException(
         '過去についてメンとリングを申し込むことはできません',
       );
     }
+  }
 
-    function isMentoringOver(requestTime: Date[]): boolean {
-      if (
-        requestTime &&
-        requestTime?.[END_TIME].getTime() < new Date().getTime()
-      ) {
-        return true;
-      }
-      return false;
+  isMentoringOver(requestTime: Date[]): boolean {
+    const END_TIME = 1;
+
+    if (
+      requestTime &&
+      requestTime?.[END_TIME].getTime() < new Date().getTime()
+    ) {
+      return true;
     }
+    return false;
   }
 }
