@@ -144,6 +144,7 @@ export class MentoringLogsService {
         throw new BadRequestException(process.env.BADREQUESTEXCEPTION);
       }
 
+      //選ばれたリクエストタイムのメンタリング時間ルールに合うか検証
       this.applyService.checkDate(
         getJSTDate(requestedTime[0]),
         getJSTDate(requestedTime[1]),
