@@ -86,14 +86,16 @@ export class MentoringLogsRepository {
     }
   }
 
-  async save(mentoringLogs: MentoringLogs): Promise<boolean> {
+  async save(mentoringLogs: MentoringLogs): Promise<MentoringLogs> {
+    let result = null;
+
     try {
-      await this.mentoringLogsRepository.save(mentoringLogs);
+      result = await this.mentoringLogsRepository.save(mentoringLogs);
     } catch (error) {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
     }
 
-    return true;
+    return result;
   }
 
   async findMentoringLogsById(uuid: string): Promise<MentoringLogs> {

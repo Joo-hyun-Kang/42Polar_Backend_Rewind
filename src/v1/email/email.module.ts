@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { RedisModule } from '../redis/redis.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MentoringLogsModule } from '../mentoring-logs/mentoring-logs.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         };
       },
     }),
+    forwardRef(() => MentoringLogsModule),
   ],
   providers: [EmailService],
   exports: [EmailService],

@@ -9,6 +9,7 @@ import { CadetsModule } from '../cadets/cadets.module';
 import { MentorsModule } from '../mentors/mentors.module';
 import { CalendarModule } from '../calendar/calendar.module';
 import { MentoringLogsController } from './mentoring-logs.controller';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { MentoringLogsController } from './mentoring-logs.controller';
     forwardRef(() => MentorsModule),
     CadetsModule,
     forwardRef(() => CalendarModule),
+    forwardRef(() => EmailModule),
   ],
   controllers: [MentoringLogsController],
   providers: [MentoringLogsService, ApplyService, MentoringLogsRepository],

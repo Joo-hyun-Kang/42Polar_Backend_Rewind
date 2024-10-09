@@ -82,7 +82,7 @@ export class MentoringLogsService {
     mentorId: string,
     cadetId: string,
     createApplyDto: CreateApplyDto,
-  ): Promise<boolean> {
+  ): Promise<MentoringLogs> {
     //Date型で切り替えていない場合、変更する, 例外が発生する
     this.validateDateFormate(createApplyDto);
 
@@ -120,10 +120,9 @@ export class MentoringLogsService {
     infos: UpdateMentoringLogInfo,
   ): Promise<boolean> {
     //なければ,NotFoundExceptionが発生する
-    const logs: MentoringLogs =
-      await this.mentoringLogsRepository.findMentoringLogsById(
-        infos.mentoringLogId,
-      );
+    const logs: MentoringLogs = await this.findMentoringLogsById(
+      infos.mentoringLogId,
+    );
 
     //更新するユーザーの権限があるか検証
     await this.validateUser(infos.MentorOrCadetId, infos.status, logs);
@@ -168,7 +167,17 @@ export class MentoringLogsService {
       throw new BadRequestException(process.env.BADREQUESTEXCEPTION);
     }
 
-    return await this.mentoringLogsRepository.save(logs);
+    await this.mentoringLogsRepository.save(logs);
+
+    return true;
+  }
+
+  async findMentoringLogsById(uuid: string): Promise<MentoringLogs> {
+    //なければ,NotFoundExceptionが発生する
+    const logs: MentoringLogs =
+      await this.mentoringLogsRepository.findMentoringLogsById(uuid);
+
+    return logs;
   }
 
   formatMentoringLog(

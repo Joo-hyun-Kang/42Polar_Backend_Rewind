@@ -4,7 +4,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { MentoringLogsService } from './mentoring-logs.service';
@@ -19,10 +18,15 @@ import { ApproveMentoringDto } from './dto/approve-mentoring.dto';
 import { LOG_STATUS } from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { RejectMentoringDto } from './dto/reject-mentoring.dto';
 import { CompleteMentoringDto } from './dto/complete-mentoring.dto';
+import { EmailService } from '../email/email.service';
+import { MailType } from './enum/mail-type.enum';
 
 @Controller()
 export class MentoringLogsController {
-  constructor(private mentoringLogsService: MentoringLogsService) {}
+  constructor(
+    private mentoringLogsService: MentoringLogsService,
+    private emailService: EmailService,
+  ) {}
 
   /*
    * メンタリング申し込みページで、新しいメンタリングを申し込みとデーターを生成するAPI
@@ -39,11 +43,24 @@ export class MentoringLogsController {
     @User() user: JwtInfo,
     @Body() createApplyDto: CreateApplyDto,
   ): Promise<boolean> {
-    return await this.mentoringLogsService.createMentorigLog(
-      mentorId,
-      user.intraId,
-      createApplyDto,
-    );
+    const createdMentoringLog =
+      await this.mentoringLogsService.createMentorigLog(
+        mentorId,
+        user.intraId,
+        createApplyDto,
+      );
+
+    let isCreateMentoringLog = false;
+    if (createdMentoringLog) {
+      isCreateMentoringLog = true;
+
+      this.emailService.sendMessage(
+        createdMentoringLog.id,
+        MailType.Reservation,
+      );
+    }
+
+    return isCreateMentoringLog;
   }
 
   /*
@@ -66,9 +83,7 @@ export class MentoringLogsController {
       status: LOG_STATUS.CONFIRMED,
       meetingAtIndex: body.meetingAtIndex,
     });
-
-    // 実装すること
-    // this.emailService.sendMessage(log.id, MailType.Approve);
+    this.emailService.sendMessage(body.mentoringLogId, MailType.Approve);
     return result;
   }
 
@@ -91,9 +106,7 @@ export class MentoringLogsController {
       status: LOG_STATUS.CANCEL,
       rejectMessage: body.rejectMessage,
     });
-
-    // 実装すること
-    // this.emailService.sendMessage(log.id, MailType.Cancel);
+    this.emailService.sendMessage(body.mentoringLogId, MailType.Cancel);
     return result;
   }
 
