@@ -74,14 +74,16 @@ export class AuthService {
     try {
       response = await fetch(providerUrl, { method: 'post' });
     } catch (err) {
+      console.log(err);
       throw new ConflictException(
-        err,
-        'access tokenを取得するのに失敗しました',
+        'OAuthサーバーからリソスをを取得するのに失敗しました',
       );
     }
 
     if (response.status >= 400) {
-      throw new ConflictException('access tokenを取得するのに失敗しました');
+      throw new ConflictException(
+        'OAuthサーバーからリソスをを取得するのに失敗しました',
+      );
     }
 
     try {
