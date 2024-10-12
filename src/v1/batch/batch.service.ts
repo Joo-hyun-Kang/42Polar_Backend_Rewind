@@ -16,16 +16,16 @@ export class BatchService {
   async manageMentoringLogsEveryMinute(): Promise<void> {
     const LIMIT_MIN = 10;
 
-    const waitingMentoringLgos =
+    const waitingMentoringLogs =
       await this.mentoringLogsService.getMentoringListByStatus([
         LOG_STATUS.WATING,
       ]);
 
     const now = new Date();
-    this.logger.log(`${now} => Manage Mentoring Logs`);
+    this.logger.log(`${now} => Manage Mentoring Logs batch`);
     now.setMinutes(now.getMinutes() + LIMIT_MIN);
 
-    waitingMentoringLgos
+    waitingMentoringLogs
       .filter((e) => {
         const twoDaytoMillseconds = 172800000;
         if (e.createdAt.getTime() + twoDaytoMillseconds <= now.getTime()) {

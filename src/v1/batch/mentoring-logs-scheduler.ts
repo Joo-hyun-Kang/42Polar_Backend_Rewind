@@ -6,7 +6,8 @@ import { BatchService } from './batch.service';
 export class MentoringLogScheduler {
   constructor(private readonly batchService: BatchService) {}
 
-  // @Cron('0 * * * * *')
+  //毎分ごとクロンジョブ実行
+  @Cron('0 * * * * *')
   handleCron() {
     this.batchService.manageMentoringLogsEveryMinute();
   }
