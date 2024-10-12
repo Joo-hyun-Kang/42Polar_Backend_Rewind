@@ -68,14 +68,33 @@ export class MentoringLogsService {
     return { logs, total: result[MENTORING_COUNT_INDEX] };
   }
 
-  async getMentoringListByStatus(
+  async getMentoringListByStatusAndMentor(
     mentorIntraId: string,
     mentoringStatus: LOG_STATUS[],
   ): Promise<MentoringLogs[]> {
-    return await this.mentoringLogsRepository.getMentoringListByStatus(
+    return await this.mentoringLogsRepository.getMentoringListByStatusAndMentor(
       mentorIntraId,
       mentoringStatus,
     );
+  }
+
+  async getMentoringListByStatus(
+    mentoringStatus: LOG_STATUS[],
+  ): Promise<MentoringLogs[]> {
+    return await this.mentoringLogsRepository.getMentoringListByStatus(
+      mentoringStatus,
+    );
+  }
+
+  async saveMentoringLog(mentoringLog: MentoringLogs): Promise<boolean> {
+    const savedMentoringLog = await this.mentoringLogsRepository.save(
+      mentoringLog,
+    );
+    if (savedMentoringLog) {
+      return true;
+    }
+
+    return false;
   }
 
   async createMentorigLog(

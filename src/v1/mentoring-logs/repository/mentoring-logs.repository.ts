@@ -69,7 +69,7 @@ export class MentoringLogsRepository {
     }
   }
 
-  async getMentoringListByStatus(
+  async getMentoringListByStatusAndMentor(
     mentorIntraId: string,
     mentoringStatus: LOG_STATUS[],
   ) {
@@ -77,6 +77,19 @@ export class MentoringLogsRepository {
       const found: MentoringLogs[] = await this.mentoringLogsRepository.find({
         where: {
           mentors: { intraId: mentorIntraId },
+          status: In(mentoringStatus),
+        },
+      });
+      return found;
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async getMentoringListByStatus(mentoringStatus: LOG_STATUS[]) {
+    try {
+      const found: MentoringLogs[] = await this.mentoringLogsRepository.find({
+        where: {
           status: In(mentoringStatus),
         },
       });
