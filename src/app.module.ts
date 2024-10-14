@@ -12,6 +12,7 @@ import { CommentsModule } from './v1/comments/comments.module';
 import { CadetsModule } from './v1/cadets/cadets.module';
 import { CalendarModule } from './v1/calendar/calendar.module';
 import { MentoringLogsModule } from './v1/mentoring-logs/mentoring-logs.module';
+import { ReportsModule } from './v1/reports/reports.module';
 
 @Module({
   imports: [
@@ -44,6 +45,10 @@ import { MentoringLogsModule } from './v1/mentoring-logs/mentoring-logs.module';
           {
             path: 'mentoring-logs',
             module: MentoringLogsModule,
+          },
+          {
+            path: 'reports',
+            module: ReportsModule,
           },
         ],
       },
