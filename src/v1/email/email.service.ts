@@ -334,9 +334,7 @@ export class EmailService {
 
         break;
       }
-      default: {
-        throw new NotFoundException(process.env.UNCOMPLETEREQUEST);
-      }
+      //取り消すの検証なしに場合は通り過ぎる
     }
   }
 
@@ -461,7 +459,7 @@ export class EmailService {
       .padStart(2, '0')}:${reservationTime
       .getUTCMinutes()
       .toString()
-      .padStart(2, '0')} (${mentoringTime}시간)`;
+      .padStart(2, '0')} (${mentoringTime}時間)`;
     return reservationTimeToString;
   }
 
