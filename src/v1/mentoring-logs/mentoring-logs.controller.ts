@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { MentoringLogsService } from './mentoring-logs.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ROLES } from '../auth/enum/roles.enum';
@@ -116,8 +109,9 @@ export class MentoringLogsController {
    * 既存コード改善
    * -APIをエンドポイントの変更、サービスでレポコードを分離
    */
-  @Patch('done')
+  @Post('done')
   @Roles([ROLES.MENTOR])
+  @UseGuards(AuthGuard, RoleGuard)
   async CompleteMentoring(
     @User() user: JwtInfo,
     @Body() body: CompleteMentoringDto,
