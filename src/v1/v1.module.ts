@@ -10,6 +10,7 @@ import { CommentsModule } from './comments/comments.module';
 import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { CalendarModule } from './calendar/calendar.module';
+import { BatchModule } from './batch/batch.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CalendarModule } from './calendar/calendar.module';
     RedisModule,
     EmailModule,
     CalendarModule,
+    BatchModule,
   ],
   controllers: [V1Controller],
   providers: [],

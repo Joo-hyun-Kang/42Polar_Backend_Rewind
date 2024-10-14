@@ -31,10 +31,10 @@ export class CalendarService {
 
   async getReservedTimes(mentorIntraId: string): Promise<Date[][]> {
     const waitingAndApprovedMentorings =
-      await this.mentoringLogsService.getMentoringListByStatus(mentorIntraId, [
-        LOG_STATUS.WATING,
-        LOG_STATUS.CONFIRMED,
-      ]);
+      await this.mentoringLogsService.getMentoringListByStatusAndMentor(
+        mentorIntraId,
+        [LOG_STATUS.WATING, LOG_STATUS.CONFIRMED],
+      );
 
     if (!waitingAndApprovedMentorings) {
       throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);

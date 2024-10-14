@@ -57,4 +57,30 @@ export class CadetsRepository {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
     }
   }
+
+  async getCadetWithMentoringLogsAndMentorAndReport(
+    intraId: string,
+  ): Promise<Cadets> {
+    let cadet: Cadets;
+    try {
+      cadet = await this.cadetsRepository.findOne({
+        where: { intraId },
+        relations: { mentoringLogs: { mentors: true, reports: true } },
+        order: {
+          mentoringLogs: {
+            createdAt: 'DESC',
+          },
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (cadet === null) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return cadet;
+  }
 }

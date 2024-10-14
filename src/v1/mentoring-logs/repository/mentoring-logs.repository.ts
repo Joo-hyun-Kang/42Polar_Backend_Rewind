@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   LOG_STATUS,
@@ -65,7 +69,7 @@ export class MentoringLogsRepository {
     }
   }
 
-  async getMentoringListByStatus(
+  async getMentoringListByStatusAndMentor(
     mentorIntraId: string,
     mentoringStatus: LOG_STATUS[],
   ) {
@@ -82,13 +86,51 @@ export class MentoringLogsRepository {
     }
   }
 
-  async save(mentoringLogs: MentoringLogs): Promise<boolean> {
+  async getMentoringListByStatus(mentoringStatus: LOG_STATUS[]) {
     try {
-      await this.mentoringLogsRepository.save(mentoringLogs);
+      const found: MentoringLogs[] = await this.mentoringLogsRepository.find({
+        where: {
+          status: In(mentoringStatus),
+        },
+      });
+      return found;
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async save(mentoringLogs: MentoringLogs): Promise<MentoringLogs> {
+    let result = null;
+
+    try {
+      result = await this.mentoringLogsRepository.save(mentoringLogs);
     } catch (error) {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
     }
 
-    return true;
+    return result;
+  }
+
+  async findMentoringLogsById(uuid: string): Promise<MentoringLogs> {
+    let mentoringLog;
+    try {
+      mentoringLog = await this.mentoringLogsRepository.findOne({
+        where: {
+          id: uuid,
+        },
+        relations: {
+          mentors: true,
+          cadets: true,
+        },
+      });
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!mentoringLog) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return mentoringLog;
   }
 }
