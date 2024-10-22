@@ -6,6 +6,7 @@ import {
   Reports,
 } from 'src/domain/typeorm/entity/reports.entity';
 import { ReportsRepository } from './repository/reports.repository';
+import { ReportDto } from './dto/report.dto';
 
 @Injectable()
 export class ReportsService {
@@ -57,5 +58,39 @@ export class ReportsService {
     }
 
     return null;
+  }
+
+  async getReport(reportId: string): Promise<ReportDto> {
+    const report: Reports = await this.reportsRepository.findReportById(
+      reportId,
+    );
+    const mentor = await report.mentors;
+    const cadet = await report.cadets;
+    const mentoringLogs = await report.mentoringLogs;
+
+    return {
+      id: report.id,
+      mentors: { name: mentor.name },
+      cadets: {
+        name: cadet.name,
+        isCommon: cadet.isCommon,
+        intraId: cadet.intraId,
+      },
+      extraCadets: report.extraCadets,
+      place: report.place,
+      topic: report.topic,
+      content: report.content,
+      imageUrl: report.imageUrl,
+      signatureUrl: report.signatureUrl,
+      feedbackMessage: report.feedbackMessage,
+      feedback1: report.feedback1,
+      feedback2: report.feedback2,
+      feedback3: report.feedback3,
+      money: report.money,
+      status: report.status,
+      mentoringLogs: mentoringLogs,
+      updatedAt: report.updatedAt,
+      createdAt: report.createdAt,
+    };
   }
 }

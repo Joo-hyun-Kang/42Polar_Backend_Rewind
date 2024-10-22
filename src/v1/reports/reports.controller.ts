@@ -1,9 +1,10 @@
-import { Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ROLES } from '../auth/enum/roles.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { ReportsService } from './reports.service';
+import { ReportDto } from './dto/report.dto';
 
 @Controller()
 export class ReportsController {
@@ -19,5 +20,16 @@ export class ReportsController {
     @Param('mentoringLogId') mentoringLogId: string,
   ): Promise<string> {
     return await this.reportsService.createReport(mentoringLogId);
+  }
+
+  /*
+   *  最初、報告書ページで作成できたデータを送るAPI
+   *  既存コード：サービスのロジックをレポジトリとサービスで分離
+   */
+  @Get(':reportId')
+  @Roles([ROLES.MENTOR, ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  async getReport(@Param('reportId') reportId: string): Promise<ReportDto> {
+    return await this.reportsService.getReport(reportId);
   }
 }
