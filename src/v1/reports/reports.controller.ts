@@ -1,10 +1,21 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ROLES } from '../auth/enum/roles.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { ReportsService } from './reports.service';
 import { ReportDto } from './dto/report.dto';
+import { User } from '../auth/decorators/user.decorator';
+import { JwtInfo } from '../auth/interface/jwt-user.interface';
+import { UpdateReportDto } from './dto/update-report.dto';
 
 @Controller()
 export class ReportsController {
@@ -31,5 +42,26 @@ export class ReportsController {
   @UseGuards(AuthGuard, RoleGuard)
   async getReport(@Param('reportId') reportId: string): Promise<ReportDto> {
     return await this.reportsService.getReport(reportId);
+  }
+
+  /*
+   *  レポートをテータを臨時保存と最終的に保存、精算するAPI
+   *  既存コード
+   *  - サービスのロジックをレポジトリとサービスで分離
+   *  - トランザクションロジック追加
+   *  - メンタリング時刻が文字列からDate型に変わるロジック追加とコメント追加
+   *  （配列でDataに変わる文字列が入る場合はclass-validateが動作していない）
+   */
+  @Patch(':reportId')
+  @Roles([ROLES.MENTOR, ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  async updateReport(
+    @Param('reportId') reportId: string,
+    @User() user: JwtInfo,
+    @Body() body: UpdateReportDto,
+  ): Promise<boolean> {
+    //レポートが存在有無と修正する権限のバーリデーションする、なければ、例外が発生する
+    await this.reportsService.validateAuthorization(user, reportId);
+    return await this.reportsService.updateReport(reportId, body, user);
   }
 }

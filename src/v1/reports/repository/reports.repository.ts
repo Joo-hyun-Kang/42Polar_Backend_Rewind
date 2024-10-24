@@ -4,8 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Reports } from 'src/domain/typeorm/entity/reports.entity';
-import { Repository } from 'typeorm';
+import {
+  REPORT_STATUS,
+  Reports,
+} from 'src/domain/typeorm/entity/reports.entity';
+import { QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class ReportsRepository {
@@ -37,8 +40,8 @@ export class ReportsRepository {
           mentoringLogs: true,
         },
         select: {
-          cadets: { name: true, isCommon: true, intraId: true },
-          mentors: { name: true },
+          cadets: true,
+          mentors: true,
         },
       });
     } catch {
@@ -50,5 +53,54 @@ export class ReportsRepository {
     }
 
     return report;
+  }
+
+  /*
+   * 他のエンティティと連関関係はアップデートしていない
+   */
+  async updateReportByQueryRunner(
+    report: Reports,
+    queryRunner: QueryRunner,
+  ): Promise<boolean> {
+    try {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(Reports)
+        .set({
+          extraCadets: report.extraCadets,
+          place: report.place,
+          topic: report.topic,
+          content: report.content,
+          imageUrl: report.imageUrl,
+          signatureUrl: report.signatureUrl,
+          feedbackMessage: report.feedbackMessage,
+          feedback1: report.feedback1,
+          feedback2: report.feedback2,
+          feedback3: report.feedback3,
+          money: report.money,
+          status: report.status,
+        })
+        .where('id = :id', { id: report.id })
+        .execute();
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
+    }
+  }
+
+  async getCompletedReportsByMentor(mentorId: string) {
+    let CompletedReports: Reports[];
+    try {
+      CompletedReports = await this.reportRepository.find({
+        relations: { mentoringLogs: true },
+        where: { mentors: { id: mentorId }, status: REPORT_STATUS.DONE },
+      });
+    } catch {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    return CompletedReports;
   }
 }
