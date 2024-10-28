@@ -11,6 +11,7 @@ import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { BatchModule } from './batch/batch.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BatchModule } from './batch/batch.module';
     EmailModule,
     CalendarModule,
     BatchModule,
+    ReportsModule,
   ],
   controllers: [V1Controller],
   providers: [],

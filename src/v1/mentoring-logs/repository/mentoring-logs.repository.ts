@@ -10,7 +10,7 @@ import {
 } from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { PaginationDto } from 'src/v1/dto/pagination.dto';
 import { SimpleLogDto } from 'src/v1/mentors/dto/simple-log.dto';
-import { In, Repository } from 'typeorm';
+import { In, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class MentoringLogsRepository {
@@ -109,6 +109,39 @@ export class MentoringLogsRepository {
     }
 
     return result;
+  }
+
+  /*
+   * 他のエンティティと連関関係はアップデートしていない
+   */
+  async updateWithQueryBuilder(
+    mentoringLogs: MentoringLogs,
+    queryRunner: QueryRunner,
+  ): Promise<boolean> {
+    try {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .update(MentoringLogs)
+        .set({
+          meetingAt: mentoringLogs.meetingAt,
+          meetingStart: mentoringLogs.meetingStart,
+          topic: mentoringLogs.topic,
+          content: mentoringLogs.content,
+          status: mentoringLogs.status,
+          rejectMessage: mentoringLogs.rejectMessage,
+          requestTime1: mentoringLogs.requestTime1,
+          requestTime2: mentoringLogs.requestTime2,
+          requestTime3: mentoringLogs.requestTime3,
+          updateAt: new Date(),
+        })
+        .where('id = :id', { id: mentoringLogs.id })
+        .execute();
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SAVE);
+    }
   }
 
   async findMentoringLogsById(uuid: string): Promise<MentoringLogs> {

@@ -22,7 +22,8 @@ import { Mentors } from 'src/domain/typeorm/entity/mentors.entity';
 import { CadetsService } from '../cadets/cadets.service';
 import { CreateApplyDto } from './dto/create-apply.dto';
 import { UpdateMentoringLogInfo } from './interface/change-status.interface';
-import { getJSTDate } from '../util/utils';
+import { getJSTDate, toDate } from '../util/utils';
+import { QueryRunner } from 'typeorm';
 
 @Injectable()
 export class MentoringLogsService {
@@ -90,6 +91,22 @@ export class MentoringLogsService {
     const savedMentoringLog = await this.mentoringLogsRepository.save(
       mentoringLog,
     );
+    if (savedMentoringLog) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async updateMentoringLogByQueryRunner(
+    mentoringLog: MentoringLogs,
+    queryRunner: QueryRunner,
+  ): Promise<boolean> {
+    const savedMentoringLog =
+      await this.mentoringLogsRepository.updateWithQueryBuilder(
+        mentoringLog,
+        queryRunner,
+      );
     if (savedMentoringLog) {
       return true;
     }
@@ -233,24 +250,24 @@ export class MentoringLogsService {
     try {
       if (!(createApplyDto.requestTime1 instanceof Date)) {
         createApplyDto.requestTime1 = [
-          this.toDate(createApplyDto.requestTime1[0]),
-          this.toDate(createApplyDto.requestTime1[1]),
+          toDate(createApplyDto.requestTime1[0]),
+          toDate(createApplyDto.requestTime1[1]),
         ];
         if (
           createApplyDto.requestTime2 &&
           !(createApplyDto.requestTime2 instanceof Date)
         ) {
           createApplyDto.requestTime2 = [
-            this.toDate(createApplyDto.requestTime2[0]),
-            this.toDate(createApplyDto.requestTime2[1]),
+            toDate(createApplyDto.requestTime2[0]),
+            toDate(createApplyDto.requestTime2[1]),
           ];
           if (
             createApplyDto.requestTime3 &&
             !(createApplyDto.requestTime3 instanceof Date)
           ) {
             createApplyDto.requestTime3 = [
-              this.toDate(createApplyDto.requestTime3[0]),
-              this.toDate(createApplyDto.requestTime3[1]),
+              toDate(createApplyDto.requestTime3[0]),
+              toDate(createApplyDto.requestTime3[1]),
             ];
           }
         }
@@ -259,20 +276,6 @@ export class MentoringLogsService {
       console.error(err);
       throw new BadRequestException('候補時刻が正しいDate型がありません。');
     }
-  }
-
-  toDate(value: any): Date {
-    if (value instanceof Date && !isNaN(value.getTime())) {
-      return value;
-    }
-
-    const date = new Date(value);
-
-    if (isNaN(date.getTime())) {
-      throw new BadRequestException('候補時刻が正しいDate型がありません。');
-    }
-
-    return date;
   }
 
   async validateUser(
