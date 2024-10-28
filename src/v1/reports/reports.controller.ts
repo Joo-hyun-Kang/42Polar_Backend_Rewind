@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -138,5 +140,32 @@ export class ReportsController {
     );
 
     return true;
+  }
+
+  /*
+   *  アップロードしたレポートのメンタリング照明写真、署名を削除するAPI
+   *  APIクエリのパタン：${reportId}/picture?image=${imageIndex}&signature=true
+   *  既存コード
+   *  - S3を利用せずに、サーバーにdiskに保存（次回にs3に更新する予定あり）
+   *  - diskに保存するため、イメージをstaticに接近させるServeStaticModule追加
+   *  - 取り除いてからプロントでまたGetAPIを呼び出す仕組み
+   */
+  @Delete(':reportId/picture')
+  @Roles([ROLES.MENTOR, ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  async deletePicture(
+    @Param('reportId') reportId: string,
+    @User() user: JwtInfo,
+    @Query('signature') signature: string,
+    @Query('image') imageIndex: number,
+  ) {
+    //レポートが存在有無と修正する権限のバーリデーションする、なければ、例外が発生する
+    await this.reportsService.validateAuthorization(user, reportId);
+
+    return this.reportsService.deleteImageAndSignature(
+      reportId,
+      imageIndex,
+      signature,
+    );
   }
 }

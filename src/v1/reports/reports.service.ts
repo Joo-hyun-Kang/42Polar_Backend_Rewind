@@ -350,6 +350,30 @@ export class ReportsService {
     await this.reportsRepository.save(report);
   }
 
+  async deleteImageAndSignature(
+    reportId: string,
+    imageIndex: number,
+    signature: string,
+  ) {
+    const report = await this.reportsRepository.findReportById(reportId);
+
+    if (
+      !isNaN(imageIndex) &&
+      imageIndex >= 0 &&
+      report.imageUrl.length > imageIndex
+    ) {
+      this.deleteFile(process.cwd() + report.imageUrl[imageIndex]);
+      report.imageUrl.splice(imageIndex, 1);
+    }
+
+    if (signature && report.signatureUrl) {
+      this.deleteFile(process.cwd() + report.signatureUrl);
+      report.signatureUrl = null;
+    }
+
+    this.reportsRepository.save(report);
+  }
+
   async deleteFile(filePath: string): Promise<void> {
     if (fs.existsSync(filePath)) {
       fs.unlink(filePath, (err) => {
