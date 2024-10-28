@@ -5,7 +5,9 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ROLES } from '../auth/enum/roles.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -16,6 +18,10 @@ import { ReportDto } from './dto/report.dto';
 import { User } from '../auth/decorators/user.decorator';
 import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { userImagePath } from 'src/app.module';
+import { extname } from 'path';
 
 @Controller()
 export class ReportsController {
@@ -63,5 +69,74 @@ export class ReportsController {
     //レポートが存在有無と修正する権限のバーリデーションする、なければ、例外が発生する
     await this.reportsService.validateAuthorization(user, reportId);
     return await this.reportsService.updateReport(reportId, body, user);
+  }
+
+  /*
+   *  レポートのメンタリング照明写真、署名をアップロードAPI
+   *  既存コード
+   *  - S3を利用せずに、サーバーにdiskに保存（次回にs3に更新する予定あり）
+   *  - diskに保存するため、イメージをstaticに接近させるServeStaticModule追加
+   *  - enum FileSavePathのパスにデータ保存
+   *  - データベースにはサーバーのURLは除いで保存しているので、GetのAPIからサーバーのURLを追加が必要
+   *  - データベースに保存した後、URLが更新される場合を防止
+   */
+  @Patch(':reportId/picture')
+  @Roles([ROLES.MENTOR, ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'image', maxCount: 1 },
+        { name: 'signature', maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: (req, file, cb) => {
+            cb(null, userImagePath);
+          },
+          filename: (req, file, cb) => {
+            const randomName = Array(32)
+              .fill(null)
+              .map(() => Math.round(Math.random() * 16).toString(16))
+              .join('');
+            const filename = `${randomName}${extname(file.originalname)}`;
+            cb(null, filename);
+          },
+        }),
+        limits: {
+          fileSize: 3000000,
+        },
+        fileFilter: (req, file, cb) => {
+          if (!file.mimetype.startsWith('image/')) {
+            cb(
+              new Error('イメージファイルだけアップロードが可能です。'),
+              false,
+            );
+          } else {
+            cb(null, true);
+          }
+        },
+      },
+    ),
+  )
+  async updatePicture(
+    @Param('reportId') reportId: string,
+    @User() user: JwtInfo,
+    @UploadedFiles()
+    files: {
+      image: Express.Multer.File[];
+      signature: Express.Multer.File[];
+    },
+  ): Promise<boolean> {
+    //レポートが存在有無と修正する権限のバーリデーションする、なければ、例外が発生する
+    await this.reportsService.validateAuthorization(user, reportId);
+
+    await this.reportsService.uploadImageAndSignature(
+      reportId,
+      files.image ? files.image[0] : undefined,
+      files.signature ? files.signature[0] : undefined,
+    );
+
+    return true;
   }
 }

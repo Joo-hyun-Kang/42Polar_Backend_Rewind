@@ -17,6 +17,8 @@ import { JwtInfo } from '../auth/interface/jwt-user.interface';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { getTotalHour, toDate } from '../util/utils';
 import { DataSource } from 'typeorm';
+import { FileSavePath } from 'src/app.module';
+import * as fs from 'fs';
 
 @Injectable()
 export class ReportsService {
@@ -75,6 +77,15 @@ export class ReportsService {
     const report: Reports = await this.reportsRepository.findReportById(
       reportId,
     );
+
+    const host = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+    const currentsignatureUrl = report.signatureUrl
+      ? host + report.signatureUrl
+      : report.signatureUrl;
+    const currentImageUrl = report.imageUrl.map((e) => {
+      return host + e;
+    });
+
     const mentor = await report.mentors;
     const cadet = await report.cadets;
     const mentoringLogs = await report.mentoringLogs;
@@ -91,8 +102,8 @@ export class ReportsService {
       place: report.place,
       topic: report.topic,
       content: report.content,
-      imageUrl: report.imageUrl,
-      signatureUrl: report.signatureUrl,
+      imageUrl: currentImageUrl,
+      signatureUrl: currentsignatureUrl,
       feedbackMessage: report.feedbackMessage,
       feedback1: report.feedback1,
       feedback2: report.feedback2,
@@ -298,5 +309,58 @@ export class ReportsService {
     }
 
     return money;
+  }
+
+  async uploadImageAndSignature(
+    reportId: string,
+    image: Express.Multer.File,
+    signature: Express.Multer.File,
+  ): Promise<void> {
+    if (!image && !signature) {
+      return;
+    }
+
+    let imageUrl = null;
+    let signatureUrl = null;
+    //データベースにはサーバーのURLは除いで保存しているので、GetのAPIからサーバーのURLを追加が必要
+    //データベースに保存した後、URLが更新される場合を防止
+    if (image && image.filename) {
+      imageUrl = `${FileSavePath.Path}/${image.filename}`;
+    }
+    if (signature && signature.filename) {
+      signatureUrl = `${FileSavePath.Path}/${signature.filename}`;
+    }
+
+    const report = await this.reportsRepository.findReportById(reportId);
+
+    if (image) {
+      if (report.imageUrl.length < 2) {
+        report.imageUrl.push(imageUrl);
+      } else {
+        // 保存された写真がある場合は、現在アップロードされた写真削除
+        // DBにある写真はそのまま、維持→ユーザーの削除は削除APIから可能
+        await this.deleteFile(image.path);
+      }
+    }
+
+    if (signature) {
+      report.signatureUrl = signatureUrl;
+    }
+
+    await this.reportsRepository.save(report);
+  }
+
+  async deleteFile(filePath: string): Promise<void> {
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          throw new Error('ファイルの削除に失敗しました');
+        }
+      });
+    } else {
+      throw new ConflictException(
+        '指定されたファイルを削除することに失敗しました',
+      );
+    }
   }
 }

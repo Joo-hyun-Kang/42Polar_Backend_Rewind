@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   basicOption,
@@ -13,6 +13,20 @@ import { CadetsModule } from './v1/cadets/cadets.module';
 import { CalendarModule } from './v1/calendar/calendar.module';
 import { MentoringLogsModule } from './v1/mentoring-logs/mentoring-logs.module';
 import { ReportsModule } from './v1/reports/reports.module';
+import * as fs from 'fs';
+import * as path from 'path';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
+
+export enum FileSavePath {
+  Path = '/assets/images',
+}
+
+// ファイルパスの設定
+export const userImagePath = path.join(
+  process.cwd(), // プロジェクトルート
+  FileSavePath.Path, // 保存パス
+);
 
 @Module({
   imports: [
@@ -53,9 +67,20 @@ import { ReportsModule } from './v1/reports/reports.module';
         ],
       },
     ]),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), FileSavePath.Path),
+      serveRoot: FileSavePath.Path,
+    }),
     V1Module,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  onModuleInit() {
+    // ディレクトリの存在確認と作成
+    if (!fs.existsSync(userImagePath)) {
+      fs.mkdirSync(userImagePath, { recursive: true });
+    }
+  }
+}
