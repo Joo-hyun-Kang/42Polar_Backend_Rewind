@@ -19,6 +19,7 @@ import { getTotalHour, toDate } from '../util/utils';
 import { DataSource } from 'typeorm';
 import { FileSavePath } from 'src/app.module';
 import * as fs from 'fs';
+import { ParsedReportQueryDto } from '../bocals/dto/parsed-report-query.dto';
 
 @Injectable()
 export class ReportsService {
@@ -386,5 +387,11 @@ export class ReportsService {
         '指定されたファイルを削除することに失敗しました',
       );
     }
+  }
+
+  async findAndCountReports(parsedReportQueryDto: ParsedReportQueryDto) {
+    return await this.reportsRepository.findAndCountReports(
+      parsedReportQueryDto,
+    );
   }
 }

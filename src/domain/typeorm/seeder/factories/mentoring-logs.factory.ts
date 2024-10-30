@@ -113,6 +113,7 @@ export const MentoringLogsFactory = setSeederFactory(
       mentoringLogs.status !== LOG_STATUS.DONE
     ) {
       mentoringLogs.meetingAt = mentoringLogs.requestTime1;
+      mentoringLogs.meetingStart = mentoringLogs.requestTime1[0];
     }
 
     // メンタリングステイタスによる、meetingAt設定修正
@@ -121,12 +122,14 @@ export const MentoringLogsFactory = setSeederFactory(
       if (mentoringLogs.requestTime1[0] < now) {
         mentoringLogs.status = LOG_STATUS.DONE;
         mentoringLogs.meetingAt = mentoringLogs.requestTime1;
+        mentoringLogs.meetingStart = mentoringLogs.requestTime1[0];
       }
     } else if (mentoringLogs.status == LOG_STATUS.DONE) {
       if (mentoringLogs.requestTime1[0] > now) {
         mentoringLogs.status = LOG_STATUS.WATING;
       } else {
         mentoringLogs.meetingAt = mentoringLogs.requestTime1;
+        mentoringLogs.meetingStart = mentoringLogs.requestTime1[0];
       }
     }
 

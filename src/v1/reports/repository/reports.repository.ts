@@ -8,7 +8,8 @@ import {
   REPORT_STATUS,
   Reports,
 } from 'src/domain/typeorm/entity/reports.entity';
-import { QueryRunner, Repository } from 'typeorm';
+import { ParsedReportQueryDto } from 'src/v1/bocals/dto/parsed-report-query.dto';
+import { Between, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class ReportsRepository {
@@ -102,5 +103,76 @@ export class ReportsRepository {
     }
 
     return CompletedReports;
+  }
+
+  async findAndCountReports(
+    pagination: ParsedReportQueryDto,
+  ): Promise<[Reports[], number]> {
+    try {
+      return await this.reportRepository.findAndCount({
+        where: [
+          {
+            mentors: {
+              intraId: pagination.mentorIntra,
+              name: pagination.mentorName,
+            },
+            mentoringLogs: {
+              meetingStart: Between(pagination.startDate, pagination.endDate),
+            },
+            status: REPORT_STATUS.FIXING,
+          },
+          {
+            mentors: {
+              intraId: pagination.mentorIntra,
+              name: pagination.mentorName,
+            },
+            mentoringLogs: {
+              meetingStart: Between(pagination.startDate, pagination.endDate),
+            },
+            status: REPORT_STATUS.DONE,
+          },
+        ],
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        select: {
+          id: true,
+          extraCadets: true,
+          place: true,
+          createdAt: true,
+          updatedAt: true,
+          signatureUrl: true,
+          imageUrl: true,
+          money: true,
+          status: true,
+          mentoringLogs: {
+            id: true,
+            createdAt: true,
+            meetingAt: true,
+          },
+          mentors: {
+            intraId: true,
+            name: true,
+            duty: true,
+          },
+          cadets: {
+            intraId: true,
+            isCommon: true,
+          },
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: pagination.isAscending ? 'ASC' : 'DESC',
+          },
+        },
+        skip: pagination.take * (pagination.page - 1),
+        take: pagination.take,
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
   }
 }
