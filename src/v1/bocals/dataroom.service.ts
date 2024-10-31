@@ -133,4 +133,20 @@ export class DataroomService {
 
     return { reports: resolvedReports, total: result[1] };
   }
+
+  async patchReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsService.updateReportStatusToEdit(reportIdArray);
+  }
+
+  async patchReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsService.updateReportStatusToDone(reportIdArray);
+  }
+
+  async updateAllReportStatusToEdit(): Promise<boolean> {
+    return this.reportsService.updateAllReportStatusToEdit();
+  }
+
+  async updateAllReportStatusToDone(): Promise<boolean> {
+    return this.reportsService.updateAllReportStatusToDone();
+  }
 }

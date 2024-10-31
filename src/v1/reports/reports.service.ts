@@ -394,4 +394,20 @@ export class ReportsService {
       parsedReportQueryDto,
     );
   }
+
+  async updateReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsRepository.updateReportStatusToEdit(reportIdArray);
+  }
+
+  async updateReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsRepository.updateReportStatusToDone(reportIdArray);
+  }
+
+  async updateAllReportStatusToEdit(): Promise<boolean> {
+    return this.reportsRepository.updateAllReportStatusToEdit();
+  }
+
+  async updateAllReportStatusToDone(): Promise<boolean> {
+    return this.reportsRepository.updateAllReportStatusToDone();
+  }
 }

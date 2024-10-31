@@ -9,7 +9,7 @@ import {
   Reports,
 } from 'src/domain/typeorm/entity/reports.entity';
 import { ParsedReportQueryDto } from 'src/v1/bocals/dto/parsed-report-query.dto';
-import { Between, QueryRunner, Repository } from 'typeorm';
+import { Between, In, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class ReportsRepository {
@@ -119,17 +119,7 @@ export class ReportsRepository {
             mentoringLogs: {
               meetingStart: Between(pagination.startDate, pagination.endDate),
             },
-            status: REPORT_STATUS.FIXING,
-          },
-          {
-            mentors: {
-              intraId: pagination.mentorIntra,
-              name: pagination.mentorName,
-            },
-            mentoringLogs: {
-              meetingStart: Between(pagination.startDate, pagination.endDate),
-            },
-            status: REPORT_STATUS.DONE,
+            status: In([REPORT_STATUS.FIXING, REPORT_STATUS.DONE]),
           },
         ],
         relations: {
@@ -173,6 +163,54 @@ export class ReportsRepository {
     } catch (e) {
       console.error(e);
       throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async updateReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { id: In(reportIdArray) },
+        { status: REPORT_STATUS.FIXING },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { id: In(reportIdArray) },
+        { status: REPORT_STATUS.DONE },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateAllReportStatusToEdit(): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { status: REPORT_STATUS.DONE },
+        { status: REPORT_STATUS.FIXING },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateAllReportStatusToDone(): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { status: REPORT_STATUS.FIXING },
+        { status: REPORT_STATUS.DONE },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
     }
   }
 }
