@@ -414,4 +414,8 @@ export class ReportsService {
   async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
     return this.reportsRepository.findSelectedReports(reportIds);
   }
+
+  async findAllReports(): Promise<Reports[]> {
+    return this.reportsRepository.findAllReports();
+  }
 }

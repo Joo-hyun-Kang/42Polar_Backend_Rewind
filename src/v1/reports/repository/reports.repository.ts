@@ -246,4 +246,32 @@ export class ReportsRepository {
 
     return reports;
   }
+
+  async findAllReports(): Promise<Reports[]> {
+    let reports;
+
+    try {
+      reports = await this.reportRepository.find({
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: 'DESC',
+          },
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!reports) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return reports;
+  }
 }

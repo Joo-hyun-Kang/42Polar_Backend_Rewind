@@ -122,4 +122,18 @@ export class BocalsController {
       response,
     );
   }
+
+  /*
+   *  Bocal(運営)のデータルームで全ての報告書についてExcelにファイルで返すAPI
+   *  既存コード
+   *  既存にないAPIを実装
+   */
+  @Post('data-room/all/excel')
+  @Roles([ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  async getMentoringExcelFileAll(
+    @Res({ passthrough: true }) response,
+  ): Promise<void> {
+    return await this.dataroomService.createMentoringExcelFileAll(response);
+  }
 }

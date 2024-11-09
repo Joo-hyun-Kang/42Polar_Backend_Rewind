@@ -158,6 +158,109 @@ export class DataroomService {
 
   async createMentoringExcelFile(reportIds: string[], response): Promise<void> {
     //XLSXファイルに対応するオブジェクトを生成
+    const workbook = this.getExcelFile();
+    const worksheet = workbook.getWorksheet();
+
+    //レーポットがなければ、NotFoundExceptionが発生する
+    const reports = await this.reportsService.findSelectedReports(reportIds);
+    const rowData: MentoringExcelData[] = await this.getOneMentoringInfo(
+      reports,
+    );
+
+    //ローにデータ追加する
+    await Promise.all(
+      rowData.map(async (rowData) => {
+        worksheet.addRow(rowData, 'o+');
+      }),
+    );
+
+    try {
+      await response.writeHead(201, {
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      await workbook.xlsx.write(response);
+      response.end();
+    } catch {
+      throw new ConflictException('response 生成中にエラーが発生しました');
+    }
+  }
+
+  async createMentoringExcelFileAll(response): Promise<void> {
+    //XLSXファイルに対応するオブジェクトを生成
+    const workbook = this.getExcelFile();
+    const worksheet = workbook.getWorksheet();
+
+    //レーポットがなければ、NotFoundExceptionが発生する
+    const reports = await this.reportsService.findAllReports();
+    const rowData: MentoringExcelData[] = await this.getOneMentoringInfo(
+      reports,
+    );
+
+    //ローにデータ追加する
+    await Promise.all(
+      rowData.map(async (rowData) => {
+        worksheet.addRow(rowData, 'o+');
+      }),
+    );
+
+    try {
+      await response.writeHead(201, {
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      await workbook.xlsx.write(response);
+      response.end();
+    } catch {
+      throw new ConflictException('response 生成中にエラーが発生しました');
+    }
+  }
+
+  async getOneMentoringInfo(reports: Reports[]): Promise<MentoringExcelData[]> {
+    const mentoringExcelData = await Promise.all(
+      reports.map(async (report): Promise<MentoringExcelData> => {
+        const mentor = await report.mentors;
+        const cadet = await report.cadets;
+        return {
+          mentorName: mentor.name,
+          mentorIntraId: mentor.intraId,
+          mentorCompany: mentor.company,
+          mentorDuty: mentor.duty,
+          date: report.mentoringLogs.meetingAt[0].toLocaleDateString('ja-JP'),
+          place: report.place,
+          isCommon: cadet.isCommon ? '共通' : '深化',
+          startTime: report.mentoringLogs.meetingAt[0]
+            .toTimeString()
+            .slice(
+              0,
+              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
+            ),
+          endTime: report.mentoringLogs.meetingAt[1]
+            .toTimeString()
+            .slice(
+              0,
+              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
+            ),
+          totalHour:
+            Math.floor(
+              ((report.mentoringLogs.meetingAt[1].getTime() -
+                report.mentoringLogs.meetingAt[0].getTime()) /
+                (1000 * 60 * 60)) *
+                10,
+            ) / 10,
+          money: report.money,
+          cadetName: report.extraCadets
+            ? `${cadet.name}(${cadet.intraId}, ${report.extraCadets})`
+            : `${cadet.name}(${cadet.intraId})`,
+        };
+      }),
+    );
+
+    return mentoringExcelData;
+  }
+
+  getExcelFile() {
+    //XLSXファイルに対応するオブジェクトを生成
     const workbook = new Excel.Workbook();
 
     //新しいワークシートを生成
@@ -255,71 +358,6 @@ export class DataroomService {
       cell.alignment = { horizontal: 'center' };
     });
 
-    //レーポットがなければ、NotFoundExceptionが発生する
-    const reports = await this.reportsService.findSelectedReports(reportIds);
-    const rowData: MentoringExcelData[] = await this.getOneMentoringInfo(
-      reports,
-    );
-
-    //ローにデータ追加する
-    await Promise.all(
-      rowData.map(async (rowData) => {
-        worksheet.addRow(rowData, 'o+');
-      }),
-    );
-
-    try {
-      await response.writeHead(201, {
-        'Content-Type':
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      await workbook.xlsx.write(response);
-      response.end();
-    } catch {
-      throw new ConflictException('response 生成中にエラーが発生しました');
-    }
-  }
-
-  async getOneMentoringInfo(reports: Reports[]): Promise<MentoringExcelData[]> {
-    const mentoringExcelData = await Promise.all(
-      reports.map(async (report): Promise<MentoringExcelData> => {
-        const mentor = await report.mentors;
-        const cadet = await report.cadets;
-        return {
-          mentorName: mentor.name,
-          mentorIntraId: mentor.intraId,
-          mentorCompany: mentor.company,
-          mentorDuty: mentor.duty,
-          date: report.mentoringLogs.meetingAt[0].toLocaleDateString('ja-JP'),
-          place: report.place,
-          isCommon: cadet.isCommon ? '共通' : '深化',
-          startTime: report.mentoringLogs.meetingAt[0]
-            .toTimeString()
-            .slice(
-              0,
-              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
-            ),
-          endTime: report.mentoringLogs.meetingAt[1]
-            .toTimeString()
-            .slice(
-              0,
-              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
-            ),
-          totalHour:
-            Math.floor(
-              ((report.mentoringLogs.meetingAt[1].getTime() -
-                report.mentoringLogs.meetingAt[0].getTime()) /
-                (1000 * 60 * 60)) *
-                10,
-            ) / 10,
-          money: report.money,
-          cadetName: report.extraCadets
-            ? `${cadet.name}(${cadet.intraId}, ${report.extraCadets})`
-            : `${cadet.name}(${cadet.intraId})`,
-        };
-      }),
-    );
-
-    return mentoringExcelData;
+    return workbook;
   }
 }
