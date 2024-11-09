@@ -4,7 +4,9 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -97,5 +99,27 @@ export class BocalsController {
   @UseGuards(AuthGuard, RoleGuard)
   async patchAllReportStatusToDone() {
     return this.dataroomService.updateAllReportStatusToDone();
+  }
+
+  /*
+   *  Bocal(運営)のデータルームで選択した報告書についてExcelにファイルで返すAPI
+   *  既存コード
+   *  報告書一つごと１回クエリを出すことをクエリを利用して最適化
+   *  Excelローのデータ処理中、バグが発生できるコード修正
+   */
+  @Post('data-room/excel')
+  @Roles([ROLES.BOCAL])
+  @UseGuards(AuthGuard, RoleGuard)
+  async getMentoringExcelFile(
+    @Body('reportIds') reportIds: string[],
+    @Res({ passthrough: true }) response,
+  ): Promise<void> {
+    if (typeof reportIds === 'string') {
+      reportIds = [reportIds];
+    }
+    return await this.dataroomService.createMentoringExcelFile(
+      reportIds,
+      response,
+    );
   }
 }

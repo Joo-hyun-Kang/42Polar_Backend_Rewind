@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import {
   PaginationReportDto,
   ReportResolved,
@@ -11,6 +15,8 @@ import { ParsedReportQueryDto } from './dto/parsed-report-query.dto';
 import { ReportQueryRowDto } from './dto/report-query-row.dto';
 import { addMonths, getJSTDate, toDate } from '../util/utils';
 import { ReportsService } from '../reports/reports.service';
+import * as Excel from 'exceljs';
+import { MentoringExcelData } from './interface/mentoring-excel-data.interface';
 
 @Injectable()
 export class DataroomService {
@@ -148,5 +154,172 @@ export class DataroomService {
 
   async updateAllReportStatusToDone(): Promise<boolean> {
     return this.reportsService.updateAllReportStatusToDone();
+  }
+
+  async createMentoringExcelFile(reportIds: string[], response): Promise<void> {
+    //XLSXファイルに対応するオブジェクトを生成
+    const workbook = new Excel.Workbook();
+
+    //新しいワークシートを生成
+    const worksheet = workbook.addWorksheet('Mentoring', {
+      views: [
+        {
+          state: 'frozen', //スクロールが固定する枠が決まる
+          ySplit: 1, // How many rows to freeze.
+          activeCell: 'B5', // The currently selected cell
+        },
+      ],
+      properties: { defaultRowHeight: 20 },
+    });
+
+    //コラムのセット
+    worksheet.columns = [
+      {
+        header: 'メンター',
+        key: 'mentorName',
+        width: 10,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: 'intra ID',
+        key: 'mentorIntraId',
+        width: 10,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '会社',
+        key: 'mentorCompany',
+        width: 20,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '職級',
+        key: 'mentorDuty',
+        width: 15,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: 'お出会する時刻',
+        key: 'date',
+        width: 15,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '場所',
+        key: 'place',
+        width: 15,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '区分',
+        key: 'isCommon',
+        width: 13,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '開始時刻',
+        key: 'startTime',
+        width: 10,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: '終了時刻',
+        key: 'endTime',
+        width: 10,
+        style: { alignment: { horizontal: 'center' } },
+      },
+      {
+        header: 'メンタリング時間',
+        key: 'totalHour',
+        width: 13,
+        style: { alignment: { horizontal: 'right' } },
+      },
+      {
+        header: '金額',
+        key: 'money',
+        width: 13,
+        style: { alignment: { horizontal: 'right' }, numFmt: '#,##0' },
+      },
+      {
+        header: 'メンティー',
+        key: 'cadetName',
+        width: 10,
+        style: { alignment: { horizontal: 'center' } },
+      },
+    ];
+
+    // 最初のローのセット
+    // Iterate over all non-null cells in a row
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: 'center' };
+    });
+
+    //レーポットがなければ、NotFoundExceptionが発生する
+    const reports = await this.reportsService.findSelectedReports(reportIds);
+    const rowData: MentoringExcelData[] = await this.getOneMentoringInfo(
+      reports,
+    );
+
+    //ローにデータ追加する
+    await Promise.all(
+      rowData.map(async (rowData) => {
+        worksheet.addRow(rowData, 'o+');
+      }),
+    );
+
+    try {
+      await response.writeHead(201, {
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      await workbook.xlsx.write(response);
+      response.end();
+    } catch {
+      throw new ConflictException('response 生成中にエラーが発生しました');
+    }
+  }
+
+  async getOneMentoringInfo(reports: Reports[]): Promise<MentoringExcelData[]> {
+    const mentoringExcelData = await Promise.all(
+      reports.map(async (report): Promise<MentoringExcelData> => {
+        const mentor = await report.mentors;
+        const cadet = await report.cadets;
+        return {
+          mentorName: mentor.name,
+          mentorIntraId: mentor.intraId,
+          mentorCompany: mentor.company,
+          mentorDuty: mentor.duty,
+          date: report.mentoringLogs.meetingAt[0].toLocaleDateString('ja-JP'),
+          place: report.place,
+          isCommon: cadet.isCommon ? '共通' : '深化',
+          startTime: report.mentoringLogs.meetingAt[0]
+            .toTimeString()
+            .slice(
+              0,
+              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
+            ),
+          endTime: report.mentoringLogs.meetingAt[1]
+            .toTimeString()
+            .slice(
+              0,
+              report.mentoringLogs.meetingAt[0].toTimeString().lastIndexOf(':'),
+            ),
+          totalHour:
+            Math.floor(
+              ((report.mentoringLogs.meetingAt[1].getTime() -
+                report.mentoringLogs.meetingAt[0].getTime()) /
+                (1000 * 60 * 60)) *
+                10,
+            ) / 10,
+          money: report.money,
+          cadetName: report.extraCadets
+            ? `${cadet.name}(${cadet.intraId}, ${report.extraCadets})`
+            : `${cadet.name}(${cadet.intraId})`,
+        };
+      }),
+    );
+
+    return mentoringExcelData;
   }
 }

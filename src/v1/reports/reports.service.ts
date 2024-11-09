@@ -410,4 +410,8 @@ export class ReportsService {
   async updateAllReportStatusToDone(): Promise<boolean> {
     return this.reportsRepository.updateAllReportStatusToDone();
   }
+
+  async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
+    return this.reportsRepository.findSelectedReports(reportIds);
+  }
 }

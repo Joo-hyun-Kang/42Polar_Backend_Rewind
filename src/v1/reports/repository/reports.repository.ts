@@ -213,4 +213,37 @@ export class ReportsRepository {
       throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
     }
   }
+
+  async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
+    let reports;
+
+    try {
+      reports = await this.reportRepository.find({
+        where: [
+          {
+            id: In(reportIds),
+          },
+        ],
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: 'DESC',
+          },
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!reports) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return reports;
+  }
 }
