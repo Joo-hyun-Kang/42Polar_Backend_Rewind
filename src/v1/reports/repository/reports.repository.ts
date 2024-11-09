@@ -8,7 +8,8 @@ import {
   REPORT_STATUS,
   Reports,
 } from 'src/domain/typeorm/entity/reports.entity';
-import { QueryRunner, Repository } from 'typeorm';
+import { ParsedReportQueryDto } from 'src/v1/bocals/dto/parsed-report-query.dto';
+import { Between, In, QueryRunner, Repository } from 'typeorm';
 
 @Injectable()
 export class ReportsRepository {
@@ -102,5 +103,175 @@ export class ReportsRepository {
     }
 
     return CompletedReports;
+  }
+
+  async findAndCountReports(
+    pagination: ParsedReportQueryDto,
+  ): Promise<[Reports[], number]> {
+    try {
+      return await this.reportRepository.findAndCount({
+        where: [
+          {
+            mentors: {
+              intraId: pagination.mentorIntra,
+              name: pagination.mentorName,
+            },
+            mentoringLogs: {
+              meetingStart: Between(pagination.startDate, pagination.endDate),
+            },
+            status: In([REPORT_STATUS.FIXING, REPORT_STATUS.DONE]),
+          },
+        ],
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        select: {
+          id: true,
+          extraCadets: true,
+          place: true,
+          createdAt: true,
+          updatedAt: true,
+          signatureUrl: true,
+          imageUrl: true,
+          money: true,
+          status: true,
+          mentoringLogs: {
+            id: true,
+            createdAt: true,
+            meetingAt: true,
+          },
+          mentors: {
+            intraId: true,
+            name: true,
+            duty: true,
+          },
+          cadets: {
+            intraId: true,
+            isCommon: true,
+          },
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: pagination.isAscending ? 'ASC' : 'DESC',
+          },
+        },
+        skip: pagination.take * (pagination.page - 1),
+        take: pagination.take,
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+  }
+
+  async updateReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { id: In(reportIdArray) },
+        { status: REPORT_STATUS.FIXING },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { id: In(reportIdArray) },
+        { status: REPORT_STATUS.DONE },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateAllReportStatusToEdit(): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { status: REPORT_STATUS.DONE },
+        { status: REPORT_STATUS.FIXING },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async updateAllReportStatusToDone(): Promise<boolean> {
+    try {
+      await this.reportRepository.update(
+        { status: REPORT_STATUS.FIXING },
+        { status: REPORT_STATUS.DONE },
+      );
+      return true;
+    } catch (error) {
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_UPDATE);
+    }
+  }
+
+  async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
+    let reports;
+
+    try {
+      reports = await this.reportRepository.find({
+        where: [
+          {
+            id: In(reportIds),
+          },
+        ],
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: 'DESC',
+          },
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!reports) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return reports;
+  }
+
+  async findAllReports(): Promise<Reports[]> {
+    let reports;
+
+    try {
+      reports = await this.reportRepository.find({
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        order: {
+          mentoringLogs: {
+            meetingAt: 'DESC',
+          },
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!reports) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return reports;
   }
 }

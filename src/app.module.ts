@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { BocalsModule } from './v1/bocals/bocals.module';
 
 export enum FileSavePath {
   Path = '/assets/images',
@@ -63,6 +64,10 @@ export const userImagePath = path.join(
           {
             path: 'reports',
             module: ReportsModule,
+          },
+          {
+            path: 'bocals',
+            module: BocalsModule,
           },
         ],
       },

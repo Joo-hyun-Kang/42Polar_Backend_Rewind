@@ -19,6 +19,7 @@ import { getTotalHour, toDate } from '../util/utils';
 import { DataSource } from 'typeorm';
 import { FileSavePath } from 'src/app.module';
 import * as fs from 'fs';
+import { ParsedReportQueryDto } from '../bocals/dto/parsed-report-query.dto';
 
 @Injectable()
 export class ReportsService {
@@ -386,5 +387,35 @@ export class ReportsService {
         '指定されたファイルを削除することに失敗しました',
       );
     }
+  }
+
+  async findAndCountReports(parsedReportQueryDto: ParsedReportQueryDto) {
+    return await this.reportsRepository.findAndCountReports(
+      parsedReportQueryDto,
+    );
+  }
+
+  async updateReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsRepository.updateReportStatusToEdit(reportIdArray);
+  }
+
+  async updateReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
+    return this.reportsRepository.updateReportStatusToDone(reportIdArray);
+  }
+
+  async updateAllReportStatusToEdit(): Promise<boolean> {
+    return this.reportsRepository.updateAllReportStatusToEdit();
+  }
+
+  async updateAllReportStatusToDone(): Promise<boolean> {
+    return this.reportsRepository.updateAllReportStatusToDone();
+  }
+
+  async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
+    return this.reportsRepository.findSelectedReports(reportIds);
+  }
+
+  async findAllReports(): Promise<Reports[]> {
+    return this.reportsRepository.findAllReports();
   }
 }

@@ -23,5 +23,6 @@ import { JwtModule } from '@nestjs/jwt';
   ],
   controllers: [ReportsController],
   providers: [ReportsService, ReportsRepository],
+  exports: [ReportsService],
 })
 export class ReportsModule {}
