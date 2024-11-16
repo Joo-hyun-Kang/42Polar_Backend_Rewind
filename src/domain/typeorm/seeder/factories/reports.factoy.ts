@@ -6,14 +6,14 @@ export const ReportsFactory = setSeederFactory(Reports, (faker) => {
   const reports = new Reports();
 
   reports.place = faker.helpers.arrayElement(['on-line', 'off-line']);
-  reports.topic = fakerJA.word.noun(50);
-  reports.content = fakerJA.word.noun(1000);
+  reports.topic = fakerJA.lorem.sentence();
+  reports.content = fakerJA.lorem.paragraph(2);
   reports.status = REPORT_STATUS.DONE;
   reports.imageUrl = [
-    '/assets/images/de6dfeaa61a495e324fafb1d906ac1e8.jpg',
-    '/assets/images/de6dfeaa61a495e324fafb1d906ac1e8.jpg',
+    '/assets/images/report1.png',
+    '/assets/images/report2.png',
   ];
-  reports.signatureUrl = '/assets/images/9e4c21af66406b193c308eb706bbf3910.png';
+  reports.signatureUrl = '/assets/images/signature.png';
   reports.extraCadets = '';
   reports.feedbackMessage = fakerJA.lorem.paragraph(3);
   reports.feedback1 = faker.number.int({ min: 1, max: 5 });

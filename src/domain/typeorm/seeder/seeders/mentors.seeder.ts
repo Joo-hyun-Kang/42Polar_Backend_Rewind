@@ -12,10 +12,13 @@ export class MentorsSeeder implements Seeder {
     const mentors = await Promise.all(
       mentorKeywordsData.map(async (e) => {
         const mentor = new Mentors();
+        const host = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
         mentor.intraId = e.mentor.intraId;
         mentor.name = e.mentor.name;
-        mentor.profileImage = fakerJA.image.avatar();
+        //NestJSが性的ファイルをウェブサーバーとして伝えられるため、
+        //いまいち、メンターはNestに写真アップロード中（AWSなどファイルシステムX)
+        mentor.profileImage = host + e.mentor.profileImage;
         mentor.introduction = e.mentor.introduction;
         mentor.availableTime = e.mentor.availableTime;
         mentor.isActive = e.mentor.isActive;
