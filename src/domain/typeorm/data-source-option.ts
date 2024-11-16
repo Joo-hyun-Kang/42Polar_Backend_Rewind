@@ -35,7 +35,7 @@ export const basicOption: DataSourceOptions = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   synchronize: false,
-  logging: true,
+  logging: false,
 };
 
 // Nestの場合はjs形式のエティティが必要

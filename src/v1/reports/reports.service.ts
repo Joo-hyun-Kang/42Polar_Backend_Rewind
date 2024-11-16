@@ -396,26 +396,30 @@ export class ReportsService {
   }
 
   async updateReportStatusToEdit(reportIdArray: string[]): Promise<boolean> {
-    return this.reportsRepository.updateReportStatusToEdit(reportIdArray);
+    return await this.reportsRepository.updateReportStatusToEdit(reportIdArray);
   }
 
   async updateReportStatusToDone(reportIdArray: string[]): Promise<boolean> {
-    return this.reportsRepository.updateReportStatusToDone(reportIdArray);
+    return await this.reportsRepository.updateReportStatusToDone(reportIdArray);
   }
 
   async updateAllReportStatusToEdit(): Promise<boolean> {
-    return this.reportsRepository.updateAllReportStatusToEdit();
+    return await this.reportsRepository.updateAllReportStatusToEdit();
   }
 
   async updateAllReportStatusToDone(): Promise<boolean> {
-    return this.reportsRepository.updateAllReportStatusToDone();
+    return await this.reportsRepository.updateAllReportStatusToDone();
   }
 
   async findSelectedReports(reportIds: string[]): Promise<Reports[]> {
-    return this.reportsRepository.findSelectedReports(reportIds);
+    return await this.reportsRepository.findSelectedReports(reportIds);
   }
 
   async findAllReports(): Promise<Reports[]> {
-    return this.reportsRepository.findAllReports();
+    return await this.reportsRepository.findAllReports();
+  }
+
+  async findCompletedReport(): Promise<Reports[]> {
+    return await this.reportsRepository.findCompletedReports();
   }
 }

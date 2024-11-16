@@ -8,7 +8,6 @@ export const ReportsFactory = setSeederFactory(Reports, (faker) => {
   reports.place = faker.helpers.arrayElement(['on-line', 'off-line']);
   reports.topic = fakerJA.word.noun(50);
   reports.content = fakerJA.word.noun(1000);
-  reports.money = faker.number.int({ min: 0, max: 3 }) * 5000;
   reports.status = REPORT_STATUS.DONE;
   reports.imageUrl = [
     '/assets/images/de6dfeaa61a495e324fafb1d906ac1e8.jpg',

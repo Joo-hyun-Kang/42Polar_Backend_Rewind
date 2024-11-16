@@ -3,6 +3,7 @@ import { LOG_STATUS } from 'src/domain/typeorm/entity/mentoring-logs.entity';
 import { MentoringLogsService } from '../mentoring-logs/mentoring-logs.service';
 import { EmailService } from '../email/email.service';
 import { MailType } from '../mentoring-logs/enum/mail-type.enum';
+import { ReportsService } from '../reports/reports.service';
 
 @Injectable()
 export class BatchService {
@@ -11,6 +12,7 @@ export class BatchService {
   constructor(
     private mentoringLogsService: MentoringLogsService,
     private emailService: EmailService,
+    private reportsService: ReportsService,
   ) {}
 
   async manageMentoringLogsEveryMinute(): Promise<void> {
@@ -51,5 +53,22 @@ export class BatchService {
           );
         }
       });
+  }
+
+  async updateReportMoney(): Promise<void> {
+    const now = new Date();
+    this.logger.log(`${now} => Update Report Money Logs batch`);
+
+    const completedReports = await this.reportsService.findCompletedReport();
+
+    await Promise.all(
+      completedReports.map(async (report) => {
+        const money = await this.reportsService.calculateMoneyByTotalHour(
+          report,
+        );
+        report.money = money;
+        await this.reportsService.save(report);
+      }),
+    );
   }
 }
