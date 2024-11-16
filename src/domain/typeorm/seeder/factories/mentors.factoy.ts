@@ -1,7 +1,8 @@
 import { setSeederFactory } from 'typeorm-extension';
 import { Mentors } from '../../entity/mentors.entity';
+import { fakerJA } from '@faker-js/faker';
 
-export default setSeederFactory(Mentors, faker => {
+export default setSeederFactory(Mentors, (faker) => {
   const mentors = new Mentors();
   const timeRoom = [];
   const startHour = faker.datatype.number({ min: 0, max: 21 });
@@ -27,8 +28,8 @@ export default setSeederFactory(Mentors, faker => {
   mentors.intraId = faker.person.lastName('male');
   mentors.name = faker.person.firstName('male');
   mentors.email = faker.internet.email();
-  mentors.company = faker.company.name();
-  mentors.duty = faker.company.bsNoun();
+  mentors.company = fakerJA.company.name();
+  mentors.duty = fakerJA.company.buzzNoun();
   mentors.profileImage = faker.image.avatar();
   mentors.availableTime = JSON.stringify(timeRoom);
   mentors.introduction = faker.lorem.sentence();

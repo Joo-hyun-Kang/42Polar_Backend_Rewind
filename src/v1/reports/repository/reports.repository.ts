@@ -274,4 +274,31 @@ export class ReportsRepository {
 
     return reports;
   }
+
+  async findCompletedReports(): Promise<Reports[]> {
+    let reports;
+    const CompletedReportsStatus = [REPORT_STATUS.DONE, REPORT_STATUS.FIXING];
+
+    try {
+      reports = await this.reportRepository.find({
+        relations: {
+          mentoringLogs: true,
+          cadets: true,
+          mentors: true,
+        },
+        where: {
+          status: In(CompletedReportsStatus),
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      throw new ConflictException(process.env.CONFLICTEXCEPTION_SEARCH);
+    }
+
+    if (!reports) {
+      throw new NotFoundException(process.env.NOTFOUNDEXECEPTION);
+    }
+
+    return reports;
+  }
 }
